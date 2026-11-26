@@ -29,6 +29,7 @@ export class CafeAudio{
  private hotStates=new Map<string,string>()
  private strike={start:-1,first:false,second:false,drop:false,tamp:false,lock:false}
  private heardPours=new WeakSet<object>()
+ private heardSnaps=new WeakSet<object>()
 
  unlock(){
   this.score.unlock()
@@ -67,7 +68,7 @@ export class CafeAudio{
   const ctx=this.ctx;if(!ctx)return
   if(this.observed!==g){
    this.spentGroups.clear();this.observed=g;this.hotStates.clear();this.lastState.clear();this.strike={start:-1,first:false,second:false,drop:false,tamp:false,lock:false}
-   this.heardPours=new WeakSet();this.steaming={silky:false,airy:false}
+   this.heardPours=new WeakSet();this.heardSnaps=new WeakSet();this.steaming={silky:false,airy:false}
   }
   for(const [key,station] of Object.entries(motors)){
    const name=key as Motor,active=station==='extraction'?g.groups.some(h=>h.extraction||h.flush):station==='blend'?!!(g.blend||g.citrus):!!g[station],loop=this.loops.get(name)
@@ -109,6 +110,7 @@ export class CafeAudio{
    })
   }
   for(const cue of alerts)this.cue(cue,.57)
+  if(g.snap&&!this.heardSnaps.has(g.snap)){this.heardSnaps.add(g.snap);this.lidSnap()}
   this.observeWorkflow(g)
   if(this.voiceClips.size)this.guestVoices.update(g,ctx,this.voiceClips,this.enabled)
 
@@ -131,13 +133,33 @@ export class CafeAudio{
   }
   for(const job of g.pours){
    const fraction=(g.tick-job.start)/(job.end-job.start)
-   if(fraction>=(job.action==='ice'?.52:.33)&&!this.heardPours.has(job)){
+   if(fraction>=(job.action==='ice'?.52:job.action==='water'?0:.33)&&!this.heardPours.has(job)){
     this.heardPours.add(job)
     this.cue(job.action==='ice'?'ice-clink':job.action==='water'?'hot-water':'pour-liquid')
    }
   }
  }
 
+ /** Short, dry plastic seating click; only emitted for a committed lid cycle. */
+ /** Three light cup-rim clicks and a short paper rustle on a successful bulk restock. */
+ restockSound(){
+  const ctx=this.ctx;if(!ctx||!this.enabled)return
+  const n=Math.round(ctx.sampleRate*.24),buffer=ctx.createBuffer(1,n,ctx.sampleRate),a=buffer.getChannelData(0)
+  let seed=271,previous=0
+  for(let i=0;i<n;i++){const t=i/ctx.sampleRate;seed=(Math.imul(seed,1664525)+1013904223)>>>0;const noise=seed/2147483648-1;let sample=0
+   for(const [offset,freq] of [[0,1180],[.057,1420],[.114,1670]]){const dt=t-offset;if(dt>=0)sample+=(.21*Math.sin(dt*Math.PI*2*freq)+.13*(noise-previous))*Math.exp(-dt*76)}
+   a[i]=sample+.032*(noise-previous)*Math.sin(Math.PI*t/.24);previous=noise
+  }
+  const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;gain.gain.value=.58;source.connect(gain);gain.connect(ctx.destination);source.start()
+ }
+ private lidSnap(){
+  const ctx=this.ctx;if(!ctx||!this.enabled)return
+  const n=Math.round(ctx.sampleRate*.075),buffer=ctx.createBuffer(1,n,ctx.sampleRate),a=buffer.getChannelData(0)
+  let seed=731,prev=0
+  for(let i=0;i<n;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const noise=seed/2147483648-1,t=i/ctx.sampleRate
+   a[i]=(.48*(noise-prev)*Math.exp(-t*95)+.21*Math.sin(t*2*Math.PI*1450)*Math.exp(-t*170))*(1-Math.min(1,t/.075));prev=noise}
+  const src=ctx.createBufferSource(),gain=ctx.createGain();src.buffer=buffer;gain.gain.value=.53;src.connect(gain);gain.connect(ctx.destination);src.start()
+ }
  private stop(name:Motor){
   const loop=this.loops.get(name),ctx=this.ctx;if(!loop||!ctx)return
   loop.gain.gain.setTargetAtTime(0,ctx.currentTime,.025)

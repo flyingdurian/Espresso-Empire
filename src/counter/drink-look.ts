@@ -2,7 +2,7 @@ import type {Add,Cup,Drink} from './bench.ts'
 
 export const surfaceNames=['short','standard','water','silky','airy','mixed','coldmilk','iced-milk','frappe','tea','matcha','cocoa','pure-silky','pure-airy','pure-mixed','clear-water'] as const
 export type Surface=typeof surfaceNames[number]
-const portions:Record<Add,number>={milk:.59,foam:.23,cold:.68,ice:0,coldmilk:.55,tea:.76,water:.67,matcha:.12,cocoa:.12,caramel:.12,vanilla:.12,cherry:.12,orange:.76}
+const portions:Record<Add,number>={milk:.59,foam:.23,cold:.68,ice:0,coldmilk:.55,tea:.76,water:.67,matcha:.12,cocoa:.12,caramel:.12,vanilla:.12,cherry:.12,orange:.76,strawberryDrizzle:0,caramelDrizzle:0,cinnamonDust:0,cocoaDust:0}
 // The opening and foot are registered to the cropped, empty illustrated vessel.
 export const vessel:Record<Cup,{cx:number;rim:number;rx:number;ry:number;foot:number;glass:boolean}>={
  demi:{cx:.49,rim:.15,rx:.276,ry:.125,foot:.81,glass:false},
@@ -17,7 +17,7 @@ export const vessel:Record<Cup,{cx:number;rim:number;rx:number;ry:number;foot:nu
 const pigment:Record<Add,[number,number,number,number]>={
  milk:[246,222,180,1],foam:[248,233,205,.14],coldmilk:[245,233,208,1.05],
  cocoa:[69,33,21,1.6],matcha:[82,111,42,1.5],caramel:[175,93,37,.82],vanilla:[233,202,146,.55],cherry:[142,14,38,1.25],orange:[244,148,35,1.9],
- cold:[193,157,115,1.15],tea:[190,126,52,.65],water:[211,187,155,.13],ice:[215,226,224,0]
+ cold:[193,157,115,1.15],tea:[190,126,52,.65],water:[211,187,155,.13],ice:[215,226,224,0],strawberryDrizzle:[182,48,65,0],caramelDrizzle:[174,108,45,0],cinnamonDust:[165,93,51,0],cocoaDust:[75,43,29,0]
 }
 function blendedColor(c:Drink){
  const mix=[0,0,0];let weight=0

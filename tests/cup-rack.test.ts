@@ -134,7 +134,7 @@ test('tall stemmed stock columns and grouped takeaway / lid columns use register
 
 test('fixed states paint exactly one complete sprite for every committed count, zero for empty',()=>{
  const fixed=stackSpecs.filter(s=>s.stockHeights)
- assert.equal(fixed.length,8)
+ assert.equal(fixed.length,11)
  for(const s of fixed){
   const g=game(), heights=s.stockHeights!;assert.equal(heights.length,5)
   assert.ok(heights.every((h,i)=>h>0&&(!i||h>heights[i-1])))
@@ -215,8 +215,8 @@ test('refined stack heights retain exclusive hitboxes and requested spacing at e
  const latte=cupColumns.find(s=>s.id==='empire_latte_glass')!
  assert.equal(latte.offset,.21191406);assert.equal(safeStackOffset(latte),latte.offset)
  const frappe=cupColumns.find(s=>s.id==='empire_frappe_glass')!
- assert.equal(frappe.offset,.2192785);assert.equal(safeStackOffset(frappe),frappe.offset)
- assert.match((latte as typeof latte & {source:string}).source,/sunday_11_frappe_stack_5/);assert.match((frappe as typeof frappe & {source:string}).source,/sunday_11_latte_stack_5/)
+ assert.ok(Math.abs(frappe.offset-.16)<.002);assert.equal(safeStackOffset(frappe),frappe.offset)
+ assert.match((latte as typeof latte & {source:string}).source,/sunday_11_frappe_stack_5/);assert.match((frappe as typeof frappe & {source:string}).source,/counter\/tall-empty.webp/)
  assert.equal(latte.cup,'glass');assert.equal(frappe.cup,'tall');assert.ok(latte.h<frappe.h)
 })
 test('takeaway fixed rasters add an identical ridge pitch and preserve width for both sizes',()=>{
@@ -240,5 +240,17 @@ test('takeaway fixed rasters add an identical ridge pitch and preserve width for
    }
   }
   assert.ok(small.stockHeights![0]<big.stockHeights![0]);assert.ok(small.stockHeights![0]>big.stockHeights![0]*.85)
+ }
+})
+
+test('all five dine-in columns render a single dedicated stock raster for every count with unchanged anchors',()=>{
+ for(const s of cupColumns.filter(s=>!takeCup(s.cup))){
+  for(let n=1;n<=5;n++){
+   const frame=fixedStockFrame(s,n,5)!;const bytes=readFileSync(new URL('../public'+stockStatePath(frame.id),import.meta.url));const packed=bytes.readUInt32LE(21)
+   assert.equal(bytes.toString('ascii',12,16),'VP8L');assert.equal((packed&0x3fff)+1,256)
+   const h=((packed>>>14)&0x3fff)+1;assert.ok(Math.abs(h*frame.w/256-frame.h)<=frame.w/256)
+   assert.equal(frame.y+frame.h,s.y);assert.equal(frame.w,s.w)
+   const g=game();g.stock[stockKey(s.cup,s.size)]=n;assert.deepEqual(paint(g).images.filter(v=>v.id.startsWith(s.id+'_')),[frame])
+  }
  }
 })

@@ -127,16 +127,16 @@ export function makeHotAppliance(paint:Painter){
     }
     ctx.restore()
     if(slot.cook)heat(p.x,p.y,laneWidth*.4,h*.018,.48)
-    if(slot.pesto){
+    if(slot.pesto||slot.pestoJob){
      // The garnish remains legible even behind the closed iron.
      const badgeH=Math.max(13,Math.min(23,h*.075)),badgeW=badgeH*2.55
      ctx.save();ctx.translate(p.x,y+h*.833)
      ctx.fillStyle='#253824';ctx.strokeStyle='#c4cd87';ctx.lineWidth=1
      ctx.beginPath();ctx.roundRect(-badgeW/2,-badgeH/2,badgeW,badgeH,3);ctx.fill();ctx.stroke()
      ctx.fillStyle='#f4ecc7';ctx.textAlign='center';ctx.textBaseline='middle'
-     ctx.font='600 '+Math.round(badgeH*.72)+'px system-ui';ctx.fillText('Pesto',0,0)
+     ctx.font='600 '+Math.round(badgeH*.72)+'px system-ui';ctx.fillText(slot.pestoJob?'Spread':'Pesto',0,0)
      ctx.restore()
-     const age=(t-(slot.pestoAt??-1000))*g.data.tickMs/1000
+     const age=(t-(slot.pestoAt??-1000))*g.data.tickMs/1000*.72/g.data.stations.pesto
      if(age>=0&&age<.72){
       const front=g.view!=='Kitchen',origin=front?frontGalley.pesto:rear.pesto
       const move=smooth(age/.29)*(1-smooth((age-.52)/.20))

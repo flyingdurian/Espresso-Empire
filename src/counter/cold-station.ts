@@ -39,8 +39,8 @@ export function drawColdStation(ctx:CanvasRenderingContext2D,g:Bench,t:number,te
  const perCarton=g.data.capacity.carton
  const count=Math.ceil(g.milkReserve/perCarton)
  const inFlight=g.milkRefill?Math.ceil((g.milkReserve+g.milkRefill.amount)/perCarton)-1:-1
- const f=g.milkRefill?(t-g.milkRefill.start)/(g.milkRefill.end-g.milkRefill.start):0
- const pickup=ease((f-.17)/.27),putAway=ease((f-.73)/.27)
+ const job=g.milkRefill,f=job?(t-job.start)/(job.end-job.start):0
+ const pickup=job?ease((t-(job.approachStart??job.start))/Math.max(1,job.start-(job.approachStart??job.start))):0,putAway=job?ease((t-job.end)/Math.max(1,(job.returnEnd??job.end)-job.end)):0
  const outOfBay=pickup>.015&&!(count>inFlight&&putAway>.99)
  for(let row=1;row>=0;row--)for(let col=0;col<4;col++){
   const i=row*4+col
@@ -64,7 +64,7 @@ export function drawColdStation(ctx:CanvasRenderingContext2D,g:Bench,t:number,te
  const seat=cartonSeat(Math.max(0,inFlight))
  const empty=count<=inFlight
  const h=lerp(lerp(seat.h,92,pickup),empty?85:seat.h,putAway)
- const tilt=-1.16*Math.min(ease((f-.38)/.09),ease((.81-f)/.12))
+ const tilt=-1.16*pickup*(1-putAway)
  // A partly full carton returns to its own spot. An empty leaves in the barista’s hand.
  const x=lerp(lerp(seat.x,1214,pickup),empty?1708:seat.x,putAway)
  const y=lerp(lerp(seat.y,242,pickup),empty?473:seat.y,putAway)-
@@ -72,7 +72,7 @@ export function drawColdStation(ctx:CanvasRenderingContext2D,g:Bench,t:number,te
  // The painted carton's folded spout is just below its left gable.
  const lx=-h*.20,ly=-h*.89
  const spoutX=x+lx*Math.cos(tilt)-ly*Math.sin(tilt),spoutY=y+lx*Math.sin(tilt)+ly*Math.cos(tilt)
- if(f>.45&&f<.72){
+ if(f>=0&&f<1){
   ctx.strokeStyle='#fff5e0';ctx.lineWidth=2.8;ctx.lineCap='round'
   ctx.beginPath();ctx.moveTo(spoutX,spoutY);ctx.quadraticCurveTo(spoutX-3,spoutY+12,1140,260);ctx.stroke()
  }

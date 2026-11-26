@@ -69,7 +69,7 @@ export function applianceTouch(station:HotBay,box:HotRect,count:number){
  return {slots,bezel:bezelTouch(outer,interior)}
 }
 export function frontSupplyTouch(kind:keyof typeof foodBins):TouchBox{
- const p=miniRack[kind==='raw'?0:3];return {x:p.x,y:p.y-19,w:46,h:40}
+ const p=miniRack.find(p=>p.food===kind)!;return {x:p.x,y:p.y-19,w:56,h:40}
 }
 export function citrusTouch(){
  const p=citrusPress,j=p.carafe

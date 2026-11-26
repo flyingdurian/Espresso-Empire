@@ -10,16 +10,16 @@ export type PreviewState='current'|'empty'|'full'|'working'|'ready'
 export type LayerRect={x:number;y:number;w:number;h:number}
 export const identity:LayerTransform={x:0,y:0,scaleX:1,scaleY:1,rotation:0}
 export const layerIds=[
- 'espresso','grinder','steam','fridge','microwave','bean-fill','brew-plinth','tea-brewer','blender','china-rack','takeaway-rack','syrup-shelf',
- ...beanBags.map(b=>b.key),...syrupKeys.map(k=>'syrup/'+k),'milk/silky','milk/airy','citrus','mini-rack','cold-milk','ice','front/oven','front/press','rear/oven','rear/press',
- ...Array.from({length:3},(_,i)=>'filter/'+i),'loose-filter','tamper',...stackSpecs.map(s=>s.id),'shot-reserve','panini-reserve','pastry-reserve'
+ 'espresso','grinder','steam','fridge','microwave','bean-fill','brew-plinth','tea-brewer','blender','china-rack','takeaway-rack','syrup-shelf','syrup-rack','supply-boxes',
+ ...beanBags.map(b=>b.key),...syrupKeys.map(k=>'syrup/'+k),...['strawberryDrizzle','caramelDrizzle','cinnamonDust','cocoaDust'].map(k=>'topping/'+k),'milk/silky','milk/airy','citrus','mini-rack','cold-milk','ice','front/oven','front/press','rear/oven','rear/press',
+ ...Array.from({length:3},(_,i)=>'filter/'+i),'loose-filter',...stackSpecs.map(s=>s.id),'shot-reserve','panini-reserve','pastry-reserve','juice-reserve'
 ] as const
 const known=new Set<string>(layerIds)
 export const isLayer=(key:string)=>known.has(key)
 export function previewStates(layer:string):PreviewState[]{
  if(layer.startsWith('syrup/'))return ['current','working']
  if(layer==='fridge'||layer==='microwave')return ['current','empty','ready']
- if(stackSpec(layer)||beanBags.some(b=>b.key===layer)||['ice','cold-milk','mini-rack','shot-reserve','panini-reserve','pastry-reserve'].includes(layer))return ['current','empty','full','working']
+ if(stackSpec(layer)||beanBags.some(b=>b.key===layer)||['ice','cold-milk','mini-rack','supply-boxes','shot-reserve','panini-reserve','pastry-reserve','juice-reserve'].includes(layer))return ['current','empty','full','working']
  if(layer.startsWith('milk/')||layer.endsWith('/oven')||layer.endsWith('/press')||['citrus','tea-brewer','blender','loose-filter'].includes(layer))return ['current','empty','full','working','ready']
  return ['current']
 }
@@ -32,7 +32,7 @@ export function parseLayerMap(raw:unknown):LayerMap{
   if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid transform for '+key)
   const next:LayerTransform={...identity}
   for(const [k,v] of Object.entries(value)){
-   if(k==='stackOffset'){if(!stackSpec(key)||typeof v!=='number'||!Number.isFinite(v)||v<.05||v>.6)throw Error('Invalid stack offset: '+key);next.stackOffset=v;continue}
+   if(k==='stackOffset'){if(!stackSpec(key)||typeof v!=='number'||!Number.isFinite(v)||v<.05||v>(stackSpec(key)?.minOffset!==undefined?.72:.6))throw Error('Invalid stack offset: '+key);next.stackOffset=v;continue}
    if(!Object.hasOwn(limits,k))throw Error('Unknown transform property: '+k)
    const field=k as keyof typeof limits,[lo,hi]=limits[field]
    if(typeof v!=='number'||!Number.isFinite(v)||v<lo||v>hi)throw Error('Out of range: '+key+'.'+k)
@@ -61,7 +61,7 @@ export function previewBench(game:Bench,layer:string,state:PreviewState):Bench{
  if(layer==='microwave')g.microReady=state==='ready'
  if(layer==='tea-brewer'){g.teaReady=filled;g.brew=working?cycle(g.data.stations.tea):null}
  if(layer==='blender'){g.blendReady=filled;g.blend=working?cycle(g.data.stations.blend):null}
- if(layer==='citrus'){g.orangeStock=filled?g.data.capacity.citrus:0;g.citrus=working?cycle(g.data.stations.citrus):null}
+ if(layer==='citrus'){g.orangeDock=filled?g.data.capacity.citrus:0;g.citrus=working?cycle(g.data.stations.citrus):null}
  if(layer.startsWith('milk/')){const texture=layer.slice(5) as 'silky'|'airy';g.textures[texture]=filled?g.data.capacity.milkBatch:0;g.steamJobs[texture]=working?{...cycle(g.data.stations.steamer),amount:g.data.capacity.milkBatch}:null}
  const col=cupColumns.find(s=>s.id===layer);if(col){g.stock[stockKey(col.cup,col.size)]=state==='empty'?0:working?2:takeCup(col.cup)?g.data.capacity.takeaway:g.data.capacity.ceramic}
  const lid=lidColumns.find(s=>s.id===layer);if(lid)g.lidStock[lid.cup]=state==='empty'?0:working?2:g.lidCapacity
@@ -70,7 +70,8 @@ export function previewBench(game:Bench,layer:string,state:PreviewState):Bench{
   const oven=layer.endsWith('/oven');g.foodFlights=[]
   for(const slot of oven?g.ovenSlots:g.pressSlots){slot.state=state==='empty'?'empty':working?'cooking':state==='ready'?'ready':'loaded';slot.cook=working?cycle(g.data.stations[oven?'oven':'press']):null;slot.deadline=null;slot.pesto=false}
  }
- if(layer==='loose-filter'){g.basket=state==='empty'?'clean':working?'dosed':'tamped';g.assistedService=false;g.basketCycle=null}
+ if(layer==='loose-filter'){g.basket=state==='empty'?'clean':working?'dosed':'attached';g.assistedService=false;g.basketCycle=null}
+ if(layer==='juice-reserve'){g.orangeDock=null;g.orangeReserve.splice(0,4,0,null,null,state==='empty'?null:state==='working'?1:g.data.capacity.citrus)}
  if(layer==='shot-reserve')g.shotReserve.fill(state==='empty'?null:state==='working'?'short':'standard')
  if(layer==='panini-reserve'||layer==='pastry-reserve'){const panini=layer==='panini-reserve';for(let i=0;i<g.foodReserve.length;i++)if((i<servicePass.panini.capacity)===panini)g.foodReserve[i]=state==='empty'?null:{food:panini?'grilled':'baked'}}
  return g

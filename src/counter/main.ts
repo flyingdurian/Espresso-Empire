@@ -1,5 +1,5 @@
 import {activeCupId,activeCupPath} from './active-cup.ts'
-import {servicePass,reserveHead,chooseShotPocket} from './service-pass.ts'
+import {servicePass,reserveHead,chooseShotPocket,juiceTouch} from './service-pass.ts'
 import {lidSeats,lidTouch,holderTouch} from './cup-rack.ts'
 import {machineControl} from './machine-control.ts'
 import './style.css'
@@ -8,18 +8,19 @@ import {canDrop} from './drop-eligibility.ts'
 import {milkTouch,syrupTouch,saucerTouch,towelTouch,shotRackBezelTouch,shotPocketTouch,foodWellTouch,shotKeyTouch,portafilterTouch,applianceTouch,frontSupplyTouch,citrusTouch} from './touch-layout.ts'
 import {counterTravel} from './counter-travel.ts'
 import {cancelOwnedPointer} from './gesture-ownership.ts'
-import {frontGalley} from './galley-layout.ts'
+import {frontGalley,carafeTouch} from './galley-layout.ts'
 import {filterPose} from './filter-pose.ts'
+import {activeOrderIds,orderNumber} from './order-guide.ts'
 import {recipeGuide} from './recipe-guide.ts'
 import {bindImmersive} from './immersive.ts'
 import {visibleStage,viewportMoved,type ViewRect} from './viewport-fit.ts'
-import {Bench,stockKey,takeCup,type Config,type End,type Input,type Add,type Size,type Drink} from './bench.ts'
+import {Bench,stockKey,takeCup,toppingKeys,type Config,type End,type Input,type Add,type Size,type Drink} from './bench.ts'
 import {breakfastName,piazzaShift,piazzaName,lunchName,lunchShift,shiftName,levelConfig,levels,upgrades,loadProgress,saveProgress,buyUpgrade,completeLevel} from './campaign.ts'
 import {workstation} from './scene.ts'
 import {layerTuner} from './layer-tuner.ts'
 import {previewBench} from './layer-overrides.ts'
-import {icePortions} from './ice-service.ts'
-import {heads,holders,serveX,brewPoint,ounces,stage,beanBags,type Carry,fridge,finishSources,syrupKeys} from './station-layout.ts'
+import {icePortions,iceTouch} from './ice-service.ts'
+import {heads,holders,serveX,brewPoint,ounces,stage,beanBags,type Carry,fridge,finishSources,syrupKeys,toppingSources,miniRack} from './station-layout.ts'
 import {frontHot} from './hot-appliance.ts'
 import {rear,rearFood,rearOven,rearPress} from './rear-layout.ts'
 import {FixedClock} from '../sim/clock.ts'
@@ -38,7 +39,7 @@ async function open(){
  let level=piazzaShift,cfg=levelConfig(base,level,progress.ranks),g=new Bench(cfg,tuning),head=0,panel:Panel='Espresso',paused=false,endShown=false,sound=true,last=0,signature='',ticketKey='',hintUntil=0,uiTick=-1
  let drag:{id:number;x:number;y:number;carry:Carry;source:HTMLElement;active:boolean}|null=null,over:HTMLElement|null=null
  let skip:HTMLElement|null=null
- const guide=recipeGuide(el('recipe-focus'),el('recipe-index'),el('book-scroll'),art.shotIcon)
+ const guide=recipeGuide(el('recipe-focus'),el('recipe-index'),el('book-scroll'),art.shotIcon,end=>act({action:'to',view:end}))
  let bookOpen=false,assist=false
  try{assist=localStorage.getItem('via-bianca-controls')==='on'}catch{}
  function layout(){
@@ -104,8 +105,8 @@ async function open(){
   if(cmd.action!=='select')hidePeek();music.unlock();const count=g.events.length,old=g.coins,view=g.view
   const msg=g.command(cmd);say(msg)
   if(g.events.length!==count){
-   const cues={serviceGroup:'handle-release',purge:'hot-water',refillMilk:'drawer',cup:'ceramic',returnCup:'ceramic',returnBrownie:'ceramic',trash:'bin',beans:'beans',release:'handle-release',grind:'dose-fill',dose:'dose-fill',compact:'compactor',load:'rack-load',sandwich:'board-set',pesto:'spread',press:'press-latch',oven:'oven-door',heat:'oven-door',drawer:'drawer',washRun:'wash',restock:'drawer',refillIce:'ice-clink'} as const
-   const cue=cues[cmd.action as keyof typeof cues];if(sound&&cue)music.cue(cue)
+   const cues={bankShots:'rack-load',parkShot:'rack-load',moveOrange:'rack-load',serviceGroup:'handle-release',purge:'hot-water',refillMilk:'drawer',cup:'ceramic',returnCup:'ceramic',returnBrownie:'ceramic',trash:'bin',beans:'beans',release:'handle-release',grind:'dose-fill',dose:'dose-fill',compact:'compactor',load:'rack-load',sandwich:'board-set',pesto:'spread',press:'press-latch',oven:'oven-door',heat:'oven-door',drawer:'drawer',washRun:'wash',restock:'drawer',refillIce:'ice-clink'} as const
+   const cue=cues[cmd.action as keyof typeof cues];if(sound&&cue)music.cue(cue);if(sound&&cmd.action==='restockAll')music.restockSound()
    if(old<g.coins&&sound)music.cue('finish')
   }
   if(g.coins>old){
@@ -118,28 +119,14 @@ async function open(){
  const availableGuests=()=>g.guests.flatMap((v,i)=>v.state==='waiting'&&cfg.orders[i].end===g.view?[i]:[])
  const selectedCup=()=>g.cups[g.selected]
  const phaseAction=():Input=>{
-  if(g.assistedService&&g.basket!=='mounted')return g.basket==='tamped'?{action:'serviceGroup',head:g.serviceHead}:{action:'grinderLever'}
-  const next={mounted:'release',released:'pick',held:'knock',knocking:'knock',clean:'pick',emptyHeld:'grind',grinding:'grind',dosed:'dose',dosedHeld:'placeTamp',atTamp:'tamp',tamping:'tamp',tamped:'lock',locking:'lock'} as const
-  return g.basket==='mounted'?{action:'serviceGroup',head}:{action:next[g.basket]}
+  const next:Record<typeof g.basket,Input>={mounted:{action:'serviceGroup',head},released:{action:'pick'},held:{action:'knock'},knocking:{action:'knock'},clean:{action:'pick'},emptyHeld:{action:'grind'},grinding:{action:'grind'},dosed:{action:'attach',head:g.serviceHead},dosedHeld:{action:'attach',head:g.serviceHead},atTamp:{action:'attach',head:g.serviceHead},tamping:{action:'attach',head:g.serviceHead},tamped:{action:'attach',head:g.serviceHead},attached:{action:'lock'},locking:{action:'lock'}}
+  return next[g.basket]
  }
  function dock(action:'knock'|'grind'){
   if(action==='knock'&&g.basket==='released'||action==='grind'&&g.basket==='clean')act({action:'pick'})
   act({action})
  }
- function phaseName(){
-  if(g.assistedService){
-   switch(g.basket){
-    case 'released':return 'Releasing handle…'
-    case 'knocking':return 'Knocking out puck…'
-    case 'clean':return 'Docking at grinder…'
-    case 'emptyHeld':return g.beans?'Tap grinder to start':'Refill grinder from bean shelf'
-    case 'dosed':return 'Tap grinder to send for tamping'
-    case 'dosedHeld':return 'Moving to tamp mat…'
-    case 'tamped':return 'Tap the open group to lock'
-   }
-  }
-  return ({mounted:'Release spent handle',released:'Lift spent handle',held:'Knock out puck',knocking:'Knocking…',clean:'Lift clean handle',emptyHeld:'Dock at grinder',grinding:'Grinding…',dosed:'Lift filled handle',dosedHeld:'Place on tamp mat',atTamp:'Press tamper',tamping:'Tamping…',tamped:'Lock into group',locking:'Locking…'})[g.basket]
- }
+ function phaseName(){if(g.assistedService&&!['attached','locking'].includes(g.basket))return g.basket==='grinding'?'Grinding…':g.basket==='clean'&&g.beans<cfg.capacity.basketDoses&&!g.bags?'No beans remaining':g.basket==='dosedHeld'?'Returning portafilter…':'Automatic service…';return ({mounted:'Release spent handle',released:'Lift spent handle',held:'Knock out puck',knocking:'Knocking…',clean:'Lift clean handle',emptyHeld:'Dock at grinder',grinding:'Grinding…',dosed:'Attach pre-tamped handle',dosedHeld:'Attach pre-tamped handle',atTamp:'Attach pre-tamped handle',tamping:'Attach pre-tamped handle',tamped:'Attach pre-tamped handle',attached:'Click to lock',locking:'Locking…'})[g.basket]}
 
  type PourSource=Extract<Carry,{kind:'pot'|'add'}>
  let picked:PourSource|null=null
@@ -167,13 +154,13 @@ async function open(){
   if(art.beginIce()&&sound){music.unlock();music.cue('ice-scrape')}
   return true
  }
- function applyIngredient(add:Add,slot?:number){
+ function applyIngredient(add:Add,slot?:number,pitcher?:number){
   if(add==='ice'){
    if(slot===undefined&&!startScoop()){say(g.ice<=0?'Refill the ice well':'Scoop in use');return}
    if(slot!==undefined){art.setIcePortions(icePortions(g.cups[slot]?.size??'Medium',cfg.capacity.largePortions));art.releaseIce(g,slot)}
   }
-  if(slot===undefined){pick({kind:'add',add},cfg.finishes[add]);return}
-  act({action:'dropPour',pour:{action:'add',add,slot}})
+  if(slot===undefined){pick({kind:'add',add,pitcher},cfg.finishes[add]);return}
+  act({action:'dropPour',pour:{action:'add',add,slot,pitcher}})
  }
  type Handoff={kind:'cup'|'food';slot:number}
  let offered:Handoff|null=null
@@ -198,24 +185,28 @@ async function open(){
  function attach(n:HTMLElement,carry?:Carry,dest?:string){if(carry)n.dataset.carry=JSON.stringify(carry);if(dest)n.dataset.to=dest;return n}
  function drop(c:Carry,target:string){
   const [kind,index]=target.split('/'),i=Number(index)
+  if(c.kind==='cup'&&kind==='waterSpout'){act({action:'dropPour',pour:{action:'add',add:'water',slot:c.slot}});return true}
+  if(c.kind==='juicePitcher'&&(kind==='juiceSeat'||kind==='juiceDock')){act({action:'moveOrange',from:c.from,to:kind==='juiceDock'?-1:i});return true}
   if(c.kind==='supply'&&kind===c.station){act({action:c.station==='oven'?'load':'sandwich',slot:index===undefined?undefined:i,dragged:true});return true}
   if(c.kind==='pesto'&&kind==='press'){act({action:'pesto',slot:index===undefined?undefined:i});return true}
   if(c.kind==='pot'&&kind==='shotPocket'){stageShot(c,index===undefined?undefined:i);return true}
   if(c.kind==='bakedSlot'&&kind==='foodWell'){act({action:'bankHot',station:c.station,slot:c.slot,dragged:true});return true}
   if(c.kind==='bakedSlot'&&kind==='towel'){act({action:c.station,slot:c.slot,towelSlot:i,dragged:true});return true}
-  if(kind==='saucer'){if(c.kind==='pot')shot(c.head,c.lane,i);else if(c.kind==='holder')fillCup(c.index,i);else if(c.kind==='add')applyIngredient(c.add,i);else return false;return true}
+  if(kind==='saucer'){if(c.kind==='pot')shot(c.head,c.lane,i);else if(c.kind==='holder')fillCup(c.index,i);else if(c.kind==='add')applyIngredient(c.add,i,c.pitcher);else return false;return true}
   if(kind==='guest'&&(c.kind==='cup'||c.kind==='food')){act({action:'serve',kind:c.kind,slot:c.slot,guest:i});return true}
   if(kind==='bin'&&(c.kind==='cup'||c.kind==='food'||c.kind==='pot')){act({action:'trash',target:c.kind==='pot'?{kind:'shot',head:c.head,lane:c.lane,slot:0}:{kind:c.kind==='cup'?'drink':'food',slot:c.slot}});return true}
   if(kind==='holder'&&c.kind==='cup'){const b=holders[i];act({action:'returnCup',slot:c.slot,cup:b.cup,size:b.size});return true}
   if(kind==='brownie'&&c.kind==='food'){act({action:'returnBrownie',slot:c.slot});return true}
   if(c.kind==='beans'&&kind==='grinder'){act({action:'beans',bag:c.bag});return true}
   if(c.kind==='handle'){
+   if(kind==='knock'&&g.basket==='mounted'&&c.head!==undefined)act({action:'release',head:c.head})
    if(kind==='knock'&&g.basket==='released')act({action:'pick'})
    if(kind==='grinder'&&g.basket==='clean')act({action:'pick'})
    if(kind==='head'&&i!==g.serviceHead){say('Return this handle to group '+(g.serviceHead+1));return true}
-   const a=({knock:'knock',grinder:'grind',mat:g.basket==='dosed'?'moveToTamp':'placeTamp',head:'lock'} as const)[kind as 'knock'|'grinder'|'mat'|'head'];if(a){act({action:a});return true}
+   if(kind==='head'){act({action:'attach',head:i});return true}
+   if(kind==='knock'||kind==='grinder'){act({action:kind==='knock'?'knock':'grind'});return true}
   }
-  if(c.kind==='tamper'&&kind==='mat'){act({action:'tamp'});return true}return false
+  return false
  }
  const app=el('app')
  const peek=el('cup-peek')
@@ -302,7 +293,7 @@ async function open(){
  function renderControls(){
   if(drag||!assist||bookOpen)return
   const cc=el('controls'),group=g.groups[head],cup=selectedCup()
-  const serial=JSON.stringify([panel,head,g.view,g.basket,g.groups.map(h=>[h.pulls,h.pots,h.extraction?.lane]),g.pour?.slot,g.selected,g.source,g.foodIndex,g.cups,g.towel,g.drawer,g.bags,g.beans,g.ice,g.milk,g.milkTank,g.milkReserve,g.textures.airy,g.groups.map(h=>[h.dirty,!!h.flush]),!!g.steamJobs.silky,!!g.steamJobs.airy,g.raw,g.warm,!!g.bake,g.pressState,g.microReady,!!g.microwave,g.teaReady,g.blendReady,!!g.brew,!!g.blend,g.teaStock,g.blendStock,g.orangeStock,!!g.citrus,g.stock,g.reserve,g.lidStock,g.lidReserve,g.dirty.length,g.washRack.length,!!g.wash,g.washed,availableGuests(),g.serviceHead,g.pressSlots.map(s=>s.state),g.ovenSlots.map(s=>s.state)])
+  const serial=JSON.stringify([panel,head,g.view,g.basket,g.groups.map(h=>[h.pulls,h.pots,h.extraction?.lane]),g.pour?.slot,g.selected,g.source,g.foodIndex,g.cups,g.towel,g.drawer,g.bags,g.beans,g.ice,g.milk,g.milkTank,g.milkReserve,g.textures.airy,g.groups.map(h=>[h.dirty,!!h.flush]),!!g.steamJobs.silky,!!g.steamJobs.airy,g.raw,g.warm,!!g.bake,g.pressState,g.microReady,!!g.microwave,g.teaReady,g.blendReady,!!g.brew,!!g.blend,g.teaStock,g.blendStock,g.orangeStock,g.orangeDock,...g.orangeReserve,!!g.citrus,g.stock,g.reserve,g.lidStock,g.lidReserve,g.dirty.length,g.washRack.length,!!g.wash,g.washed,availableGuests(),g.serviceHead,g.pressSlots.map(s=>s.state),g.ovenSlots.map(s=>s.state)])
   if(serial===signature)return;signature=serial
   const body=document.createDocumentFragment()
   const row=(...actions:Action[])=>{const r=tag('div','','row');for(const item of actions){const n=button(item.label,item.fn,item.aria??item.label);n.disabled=!!item.off;if(item.on)n.setAttribute('aria-pressed','true');attach(n,item.carry,item.dest);r.append(n)}body.append(r)}
@@ -331,21 +322,22 @@ async function open(){
   }else if(panel==='Portafilter'){
    cap('Group '+((g.basket==='mounted'?head:g.serviceHead)+1)+' · '+g.basket)
    if(g.groups[g.serviceHead].dirty)row(command(g.groups[g.serviceHead].flush?'Rinsing…':'Purge group '+(g.serviceHead+1),{action:'purge',head:g.serviceHead}))
-   row(command(phaseName(),phaseAction(),{off:!!g.grind||!!g.basketCycle||g.basket==='mounted'&&group.pulls>0}))
+   row(command(phaseName(),phaseAction(),{off:!!g.grind||!!g.basketCycle||g.assistedService&&g.basket!=='attached'||g.basket==='mounted'&&group.pulls>0}))
    row(command('Refill hopper · '+g.bags,{action:'beans'},{off:!!g.beans}),a('Espresso',()=>choose('Espresso')))
   }else if(panel==='Cups'){
    saucers();cap(g.drawer?'Refill takeaway holders':'Takeaway')
    for(const cupType of ['paper','clear'])row(...holders.flatMap((v,i)=>v.cup===cupType?[a(ounces(v.size)+' '+cupType,()=>fillCup(i),{carry:{kind:'holder',index:i},dest:'holder/'+i})]:[]))
    row(...lidSeats.map(s=>command(s.label,g.drawer?{action:'restockLid',material:s.cup}:{action:'lid',material:s.cup})))
-   cap('Dine in');const ceramics=holders.slice(0,5).map((v,i)=>a(cfg.cups[v.cup],()=>fillCup(i),{carry:{kind:'holder',index:i},dest:'holder/'+i}));for(let i=0;i<ceramics.length;i+=2)row(...ceramics.slice(i,i+2))
-   row(command(g.drawer?'Close reserve':'Open reserve',{action:'drawer'}),a('Espresso',()=>choose('Espresso')))
+   cap('Dine in');const ceramics=holders.flatMap((v,i)=>takeCup(v.cup)?[]:[a(cfg.cups[v.cup],()=>fillCup(i),{carry:{kind:'holder',index:i},dest:'holder/'+i})]);for(let i=0;i<ceramics.length;i+=2)row(...ceramics.slice(i,i+2))
+   row(command('Refill takeaway cups & lids',{action:'restockAll'}),a('Espresso',()=>choose('Espresso')))
   }else if(panel==='Drinks'){
    saucers()
    cap('Milk tank · '+g.milkTank+' / '+cfg.capacity.milkTank)
    row(command('Make silky',{action:'steam',texture:'silky'},{off:!!g.steamJobs.silky||!g.milkTank||g.milk>=cfg.capacity.milkBatch}),command('Make airy',{action:'steam',texture:'airy'},{off:!!g.steamJobs.airy||!g.milkTank||g.textures.airy>=cfg.capacity.milkBatch}))
    row(command('Milk fridge · '+Math.ceil(g.milkReserve/cfg.capacity.carton),{action:'refillMilk'}),command('Lid',{action:'lid'}))
-   row(command(g.citrus?'Pressing oranges…':'Run citrus press',{action:'citrus'},{off:!!g.citrus||g.orangeStock===cfg.capacity.citrus}))
+   row(command(g.citrus?'Pressing oranges…':'Run citrus press',{action:'citrus'},{off:!!g.citrus||g.orangeDock!==0}))
    const ingredients: [Add,string][]=[['water','Hot water'],['milk','Pour silky · '+g.milk],['foam','Pour airy · '+g.textures.airy],['coldmilk','Cold milk · '+g.milkReserve],['cocoa','Chocolate'],['matcha','Matcha'],['caramel','Salted caramel'],['vanilla','Vanilla'],['cherry','Amarena cherry'],['orange','Orange juice · '+g.orangeStock],['ice','Ice · '+g.ice],['tea','Tea · '+g.teaStock],['cold','Frappé · '+g.blendStock]]
+   ingredients.push(...toppingKeys.map((id):[Add,string]=>[id,cfg.finishes[id]]))
    const actions=ingredients.map(([id,name])=>a(name,()=>applyIngredient(id),{off:id==='milk'&&(!g.milk||!!g.steamJobs.silky)||id==='foam'&&(!g.textures.airy||!!g.steamJobs.airy),carry:{kind:'add',add:id}}))
    for(let i=0;i<actions.length;i+=2)row(...actions.slice(i,i+2));if(g.ice<g.data.capacity.ice)row(command('Refill ice well',{action:'refillIce'}))
   }else if(panel==='Food'||panel==='Kitchen'){
@@ -369,7 +361,7 @@ async function open(){
 
  let hotKey=''
  function hotspots(){
-  const key=[g.binLoad,...g.shotReserve,...g.foodReserve.map(f=>f?.food),!!g.compacting,g.bags,...holders.map(b=>g.stock[stockKey(b.cup,b.size)]),...Object.values(g.lidStock),...Object.values(g.lidReserve),g.view,!!g.steamJobs.silky,!!g.steamJobs.airy,g.milkTank,g.textures.airy,g.textures.silky,g.cups[g.selected]?.size,g.groups.map(v=>[v.dirty,!!v.flush,v.extraction?.shot,v.extraction?.lane,v.pulls]),!!g.pour,g.tick===0,!!g.fridgeDoor,!!g.milkRefill,!!g.turn,g.basket,g.serviceHead,g.selected,g.groups.map(h=>h.pots.join('-')).join('/'),g.cups.map(c=>c?.uid),g.towel.map(f=>f?.food),g.drawer,g.ice,g.teaStock,g.blendStock,g.orangeStock,!!g.citrus,g.teaReady,g.blendReady,g.warm,g.overbaked,g.ovenSlots.map(s=>g.hotUrgent(s)),g.pressSlots.map(s=>g.hotUrgent(s)),placingPesto,...g.ovenSlots.map(s=>s.state),...g.pressSlots.map(s=>s.state+Number(s.pesto))].join('|')
+  const key=[g.binLoad,...g.shotReserve,...g.foodReserve.map(f=>f?.food),!!g.compacting,g.bags,...holders.map(b=>g.stock[stockKey(b.cup,b.size)]),...Object.values(g.lidStock),...Object.values(g.lidReserve),g.view,!!g.steamJobs.silky,!!g.steamJobs.airy,g.milkTank,g.textures.airy,g.textures.silky,g.cups[g.selected]?.size,g.groups.map(v=>[v.dirty,!!v.flush,v.extraction?.shot,v.extraction?.lane,v.pulls]),!!g.pour,g.tick===0,!!g.fridgeDoor,!!g.milkRefill,!!g.turn,g.basket,g.serviceHead,g.selected,g.groups.map(h=>h.pots.join('-')).join('/'),g.cups.map(c=>c?.uid),g.towel.map(f=>f?.food),g.drawer,g.ice,!!g.iceRefill,g.teaStock,g.blendStock,g.orangeStock,g.orangeDock,...g.orangeReserve,!!g.citrus,g.teaReady,g.blendReady,g.warm,g.overbaked,g.ovenSlots.map(s=>g.hotUrgent(s)),g.pressSlots.map(s=>g.hotUrgent(s)),placingPesto,...g.ovenSlots.map(s=>s.state),...g.pressSlots.map(s=>s.state+Number(s.pesto)+Number(!!s.pestoJob))].join('|')
   if(key===hotKey||drag)return;hotKey=key
   const target=el('targets');target.replaceChildren();if(g.turn)return
   function hit(name:string,x:number,y:number,w:number,h:number,fn:()=>void,carry?:Carry,dest?:string){
@@ -385,8 +377,7 @@ async function open(){
   function passStations(){
    const step=servicePass.shots
    for(const rack of shotRackBezelTouch())hit('Shot reserve · '+g.shotReserve.filter(Boolean).length+' of '+step.capacity,rack.x,rack.y,rack.w,rack.h,()=>{
-    if(picked?.kind==='pot'&&picked.head!==reserveHead)stageShot(picked)
-    else say('Tap a filled group pitcher, then this rack to stage it.')
+    act({action:'bankShots'})
    },undefined,'shotPocket')
    for(const [i,stored] of g.shotReserve.entries()){
     const pt=shotPocketTouch(i)
@@ -423,17 +414,16 @@ async function open(){
     },slot.state==='ready'?{kind:'bakedSlot',station,slot:i}:undefined,station+'/'+i)
     control.title=location+' · '+slot.state+(slot.pesto?' · pesto':'')
     control.setAttribute('aria-description',control.title)
-    const status=slot.state==='loaded'?(oven?'Bake':'Grill'):slot.state==='ready'?(g.hotUrgent(slot)?'Lift now':'Lift'):slot.state==='burnt'?'Clear':''
-    if(g.kitchen||status){
+    const status=slot.pestoJob?'':slot.state==='loaded'?(oven?'Bake':'Grill'):slot.state==='ready'?(g.hotUrgent(slot)?'Lift now':'Lift'):slot.state==='burnt'?'Clear':''
+    if(status){
      const label=tag('span',status||'', 'slot-status')
      label.dataset.state=slot.state
-     if(slot.cook)label.dataset.clock=station+'/'+i
-     if(status||slot.cook)control.append(label)
+     control.append(label)
     }
    }
   }
   function updatePesto(){
-   const eligible=g.pressSlots.flatMap((s,i)=>s.state==='loaded'&&!s.pesto?[i]:[])
+   const eligible=g.pressSlots.flatMap((s,i)=>s.state==='loaded'&&!s.pesto&&!s.pestoJob?[i]:[])
    if(eligible.length>1){placingPesto=true;say('Tap the plate that gets pesto.');return}
    act({action:'pesto',slot:eligible[0]})
   }
@@ -456,18 +446,13 @@ async function open(){
    rearHit('Run or unload dishwasher',rear.wash,()=>act({action:'washRun'}))
    foodSlots(true);return
   }
-  for(const [key,label,action] of [['tea','Tea brewer','tea'],['blend','Frappé blender','blend'],['pesto','Pesto','pesto'],['brownie','Brownies','brownie']] as const){
+  for(const [key,label,action] of [['tea','Tea brewer','tea'],['blend','Frappé blender','blend'],['pesto','Pesto','pesto']] as const){
    const b=frontGalley[key]
-   const n=hit(label,b.x,b.y,b.w,b.h,action==='pesto'?updatePesto:()=>act({action}),key==='pesto'?{kind:'pesto'}:undefined,key==='brownie'?'brownie':undefined)
+   const n=hit(label,b.x,b.y,b.w,b.h,action==='pesto'?updatePesto:()=>act({action}),key==='pesto'?{kind:'pesto'}:undefined)
    if((key==='tea'&&g.teaReady)||(key==='blend'&&g.blendReady))n.append(tag('span','Collect','station-ready'))
   }
   beanBags.forEach((bag,i)=>{const n=hit('Bean bag '+(i+1)+' · '+g.bagCounts[i],bag.x,bag.y-bag.h/2,85,bag.h,()=>act({action:'beans',bag:i}),{kind:'beans',bag:i});n.disabled=!g.bagCounts[i];n.append(tag('span',String(g.bagCounts[i]),'stock-count'))})
-  const grinderTarget=hit('Grinder',255,329,105,170,()=>{choose('Portafilter');g.assistedService?act({action:'grinderLever'}):g.basket==='dosed'?act({action:'dose'}):dock('grind')},g.basket==='dosed'&&!g.assistedService?{kind:'handle'}:undefined,'grinder')
-  if(g.assistedService&&['emptyHeld','dosed'].includes(g.basket)){
-   grinderTarget.classList.add('grinder-ready')
-   grinderTarget.append(tag('span',g.basket==='dosed'?'✓':'▶','service-signal'))
-   grinderTarget.title=g.basket==='dosed'?'Send dose to tamp mat':'Start grinder'
-  }
+  hit('Grinder',255,329,105,170,()=>{choose('Portafilter');if(g.basket==='dosed')act({action:'dose'});else dock('grind')},g.basket==='dosed'?{kind:'handle'}:undefined,'grinder')
   const keycap=(name:string,copy:string,x:number,y:number,w:number,h:number,fn:()=>void,css:string,carry?:Carry)=>{
    const n=hit(name,x,y,w,h,fn,carry)
    const style=css.split(' ')
@@ -494,14 +479,14 @@ async function open(){
     n.disabled=!!group.extraction||group.pulls===0||g.freePitcher(h)<0||group.dirty
    }
    const spent=!group.pulls&&!group.extraction&&(g.basket==='mounted'||h!==g.serviceHead)
-   const lockHere=g.basket==='tamped'&&g.serviceHead===h
+   const lockHere=g.basket==='attached'&&g.serviceHead===h
    const gripBox=portafilterTouch(h)
    const grip=hit('Group '+(h+1)+' portafilter',gripBox.x,gripBox.y,gripBox.w,gripBox.h,()=>{
     head=h;choose('Portafilter');act({action:'serviceGroup',head:h})
-   },undefined,'head/'+h)
+   },spent&&g.basket==='mounted'?{kind:'handle',head:h}:undefined,'head/'+h)
    if(spent||lockHere){
     grip.classList.add('service-needed')
-    grip.title=spent?'Spent puck · tap to service':'Tamped · tap to lock'
+    grip.title=spent?'Spent puck · tap to service':'Attached · tap to lock'
     grip.append(tag('span',spent?'↻':'↪','service-signal'))
    }
    for(let lane=0;lane<2;lane++){
@@ -510,19 +495,16 @@ async function open(){
     const carry=pot?{kind:'pot' as const,head:h,lane}:undefined
     const pour=()=>{if(pot)shot(h,lane);else focusHead(h)}
     hit('Group '+(h+1)+' pitcher '+labelLane(lane),pt.x,pt.y-22,47,48,pour,carry)
-    const n=keycap('G'+(h+1)+' '+labelLane(lane)+' · '+label,labelLane(lane)+' · '+label,x+(lane?31:-31),620,59,38,pour,'pitcher-label '+(running?'busy':kind??'empty'),carry)
-    if(running){n.setAttribute('aria-busy','true');n.disabled=true}
+    // Six legacy group/pitcher keys retired; the physical pitchers remain the controls.
    }
   }
   espressoKey('Dispense hot water','Hot water',480,466,44,44,()=>applyIngredient('water'),'water-key',{kind:'add',add:'water'})
-  hit('Hot water spout',467,535,42,62,()=>applyIngredient('water'),{kind:'add',add:'water'})
-  hit('Knock box',78,690,130,60,()=>dock('knock'),undefined,'knock');hit('Tamping mat',311,719,124,55,()=>act({action:g.basket==='atTamp'?'tamp':'placeTamp'}),undefined,'mat')
-  hit('Tamper',360,681,39,48,()=>act({action:'tamp'}),{kind:'tamper'})
-  if(!g.assistedService&&['released','held','clean','emptyHeld','dosed','dosedHeld','atTamp','tamped'].includes(g.basket)){
-   const n=hit('Loose portafilter',0,0,105,53,()=>{choose('Portafilter');act(phaseAction())},{kind:'handle'},g.basket==='atTamp'?'mat':undefined)
+  hit('Hot water spout',467,535,42,62,()=>applyIngredient('water'),{kind:'add',add:'water'},'waterSpout')
+  hit('Knock box',78,690,130,60,()=>dock('knock'),undefined,'knock')
+  if(!g.assistedService&&['released','held','clean','emptyHeld','dosedHeld'].includes(g.basket)){
+   const n=hit('Loose portafilter',0,0,105,53,()=>{choose('Portafilter');act(phaseAction())},{kind:'handle'})
    n.id='loose-handle'
   }
-  if(g.basket==='atTamp')hit('Press parked tamper',360,681,40,48,()=>act({action:'tamp'}),{kind:'tamper'})
   for(const texture of ['silky','airy'] as const){
    const pt=milkTouch(texture),kind=texture==='airy'?'foam':'milk',word=texture==='airy'?'Airy':'Silky'
    const working=!!g.steamJobs[texture]
@@ -540,20 +522,37 @@ async function open(){
   const gauge=tag('span','Milk '+g.milkTank+' / '+cfg.capacity.milkTank,'tank-count')
   Object.assign(gauge.style,{left:1190/stage.w*100+'%',top:242/stage.h*100+'%'});target.append(gauge)
   for(const id of ['coldmilk',...syrupKeys] as const){const p=id==='coldmilk'?{...finishSources[id],y:finishSources[id].y-finishSources[id].h/2,w:58}:syrupTouch(id);hit(cfg.finishes[id],p.x,p.y,p.w,p.h,()=>applyIngredient(id),{kind:'add',add:id})}
+  for(const id of toppingKeys){const p=toppingSources[id];hit(cfg.finishes[id],p.x,p.y-p.h/2,p.w,p.h,()=>applyIngredient(id),{kind:'add',add:id})}
   const citrus=citrusTouch()
   const run=citrus.run,jug=citrus.juice
   hit('Run citrus press',run.x,run.y,run.w,run.h,()=>act({action:'citrus'}))
-  const juice=hit('Pour fresh orange juice',jug.x,jug.y,jug.w,jug.h,()=>g.orangeStock?applyIngredient('orange'):act({action:'citrus'}),g.orangeStock?{kind:'add',add:'orange'}:undefined)
-  if(g.orangeStock||g.citrus)juice.append(tag('span',g.citrus?'…':String(g.orangeStock),'stock-count'))
+  const juice=hit(g.orangeDock===null?'Empty citrus dock':g.orangeDock?'Filled juice pitcher · move to reserve':'Empty docked juice pitcher',jug.x,jug.y,jug.w,jug.h,()=>{
+   if(g.orangeDock===null){const i=g.orangeReserve.findIndex((p,i)=>p===0&&g.canMoveOrange(i,-1));if(i>=0)act({action:'moveOrange',from:i,to:-1});else say('No empty pitcher available')}
+   else if(g.orangeDock>0){if(g.canMoveOrange(-1,3))act({action:'moveOrange',from:-1,to:3});else say('Use the reserved orange juice first')}
+   else act({action:'citrus'})
+  },g.orangeDock!==null&&!g.citrus?{kind:'juicePitcher',from:-1}:undefined,'juiceDock')
+  if(g.citrus)juice.append(tag('span','…','stock-count'))
+  for(const [i,stock] of g.orangeReserve.entries()){
+   if(i!==0&&i!==3)continue
+   const b=juiceTouch(i),busy=g.pours.some(p=>p.action==='orange'&&p.lane===i)
+   hit((i===0?'Empty pitcher reserve':'Orange juice reserve')+' · '+(stock===null?'open':stock===0?'empty pitcher':stock+' portions'),b.x,b.y,b.w,b.h,()=>{
+    if(stock===null&&g.canMoveOrange(-1,i))act({action:'moveOrange',from:-1,to:i})
+    else if(stock===0&&g.canMoveOrange(i,-1))act({action:'moveOrange',from:i,to:-1})
+    else if(stock===0&&g.canMoveOrange(i,0))act({action:'moveOrange',from:i,to:0})
+    else if(stock!==null&&stock>0&&!busy)applyIngredient('orange',undefined,i)
+    else say('Move a filled pitcher here or dock an empty pitcher')
+   },busy||stock===null?undefined:stock>0?{kind:'add',add:'orange',pitcher:i}:{kind:'juicePitcher',from:i},'juiceSeat/'+i)
+  }
   hit('Milk fridge',fridge.x,fridge.y,fridge.w,fridge.h,()=>{choose('Drinks');act({action:'refillMilk'})})
   for(const kind of ['raw','panino'] as const){
    const station=kind==='raw'?'oven':'press',pt=frontSupplyTouch(kind)
    hit(kind==='raw'?'Cornetto supply box':'Panini supply box',pt.x,pt.y,pt.w,pt.h,()=>{choose('Food');act({action:kind==='raw'?'load':'sandwich'})},{kind:'supply',station})
   }
+  for(const seat of miniRack){if(seat.food==='brownie'||seat.food==='madeleine'||seat.food==='cookie'||seat.food==='chips'){const food=seat.food;hit(cfg.foods[food].name,seat.x,seat.y-19,56,40,()=>{choose('Food');act({action:'snack',food})},undefined,food==='brownie'?'brownie':undefined)}}
   appliance('oven',frontHot.oven)
   hit('Microwave',1190,505,113,126,()=>{choose('Food');act({action:'heat'})})
   appliance('press',frontHot.press)
-  const ice=hit(g.ice?'Scoop ice · '+g.ice+' / '+cfg.capacity.ice:'Refill ice well',1348,673,245,69,()=>{choose('Drinks');if(!g.ice)act({action:'refillIce'});else applyIngredient('ice')},g.ice?{kind:'add',add:'ice'}:undefined)
+  const ice=hit(g.iceRefill?'Refilling ice well':g.ice?'Scoop ice · '+g.ice+' / '+cfg.capacity.ice:'Refill ice well',iceTouch.x,iceTouch.y,iceTouch.w,iceTouch.h,()=>{choose('Drinks');if(g.iceRefill)return;if(!g.ice)act({action:'refillIce'});else applyIngredient('ice')},g.ice&&!g.iceRefill?{kind:'add',add:'ice'}:undefined)
   ice.append(tag('span',g.ice+' / '+cfg.capacity.ice,'stock-count ice-count'))
   for(const [i,b] of holders.entries()){
    const travel=takeCup(b.cup),key=stockKey(b.cup,b.size)
@@ -562,27 +561,30 @@ async function open(){
    const n=hit(name,bTouch.x,bTouch.y,bTouch.w,bTouch.h,()=>{choose('Cups');fillCup(i)},stock>0&&(!g.drawer||!travel)?{kind:'holder',index:i}:undefined,'holder/'+i)
    n.classList.add('cup-bin')
    n.setAttribute('aria-description',stock+' in rack'+(travel?', '+g.reserve[key]+' in reserve':''))
-   n.title=name+' · '+stock+' in rack'
+   n.title=name
   }
-  for(const seat of lidSeats){const b=lidTouch(seat,g.lidCapacity),stock=g.lidStock[seat.cup];const n=hit(seat.label,b.x,b.y,b.w,b.h,()=>act(g.drawer?{action:'restockLid',material:seat.cup}:{action:'lid',material:seat.cup}));n.classList.add('cup-bin');n.setAttribute('aria-description',stock+' in rack');n.title=seat.label};hit('Takeaway reserve',883,916,520,47,()=>{choose('Cups');act({action:'drawer'})})
+  for(const seat of lidSeats){const b=lidTouch(seat,g.lidCapacity),stock=g.lidStock[seat.cup];const n=hit(seat.label,b.x,b.y,b.w,b.h,()=>act(g.drawer?{action:'restockLid',material:seat.cup}:{action:'lid',material:seat.cup}));n.classList.add('cup-bin');n.setAttribute('aria-description',stock+' in rack');n.title=seat.label};hit('Refill takeaway cups and lids',883,916,520,47,()=>{choose('Cups');act({action:'restockAll'})})
   g.cups.forEach((c,i)=>{const b=saucerTouch(i,c);hit('Select saucer '+(i+1),b.x,b.y,b.w,b.h,()=>cupAction(i),c?{kind:'cup',slot:i}:undefined,'saucer/'+i)})
   foodSlots(false);passStations()
-  for(const [add,x,count] of [['tea',1497,g.teaStock],['cold',1595,g.blendStock]] as const){
-   if(count)hit('Pour '+cfg.finishes[add],x,803,85,66,()=>applyIngredient(add),{kind:'add',add}).append(tag('span',String(count),'stock-count'))
+  for(const [add,count] of [['tea',g.teaStock],['cold',g.blendStock]] as const){
+   const b=carafeTouch(add)
+   const label=add==='tea'?'Brewed tea pitcher':'Blended frappé pitcher'
+   const n=hit(label+(count?' · '+count+' portions':' · empty'),b.x,b.y,b.w,b.h,()=>{if(count)applyIngredient(add);else act({action:add==='tea'?'tea':'blend'})},count?{kind:'add',add}:undefined)
+   if(count)n.append(tag('span',String(count),'stock-count'))
   }
  }
- const orderName=(i:number)=>{const o=cfg.orders[i],v=g.guests[i];return [o.drink&&!v.gotDrink?cfg.recipes[o.drink].name:'',o.food&&!v.gotFood?cfg.foods[o.food].name:''].filter(Boolean).join(' + ')}
+ const orderName=(i:number)=>{const o=cfg.orders[i],v=g.guests[i];return [o.drink&&!v.gotDrink?cfg.recipes[o.drink].name+(o.toppings?.length?' + '+o.toppings.map(t=>cfg.finishes[t]).join(', '):''):'',o.food&&!v.gotFood?cfg.foods[o.food].name:''].filter(Boolean).join(' + ')}
  function tickets(){
   const ids=g.turn?[]:availableGuests(),key=ids.map(i=>[i,orderName(i)]).join('/')
   const parent=el('customers')
   if(key!==ticketKey){ticketKey=key;parent.replaceChildren();for(const i of ids){
-   const o=cfg.orders[i],v=g.guests[i],x=serveX[o.spot],fn=()=>{if(offered){act({action:'serve',...offered,guest:i})}else act({action:'guest',guest:i})}
+   const o=cfg.orders[i],v=g.guests[i],x=serveX[o.spot],fn=()=>{if(offered){act({action:'serve',...offered,guest:i});return}toggleBook(true);guide.follow(g,i);if(g.source==='cup'?g.canServe(i,'cup',g.selected,false):g.canServe(i,'food',g.foodIndex,false))act({action:'guest',guest:i})}
    const guest=button('',fn,'Serve '+o.name);guest.className='guest';Object.assign(guest.style,{left:(x-75)/stage.w*100+'%',top:'25%',width:'9%',height:'32%'});attach(guest,undefined,'guest/'+i)
-   const ticket=button('',()=>{if(offered){fn();return}if(o.drink&&!g.guests[i].gotDrink){toggleBook(true);guide.follow(g,i)}else fn()},o.name+' · '+orderName(i));ticket.className='ticket';ticket.style.left=x/stage.w*100+'%';ticket.style.bottom='76%';attach(ticket,undefined,'guest/'+i)
-   ticket.append(tag('small',o.mode==='To go'?ounces(o.size)+' · To go':'Dine in'))
+   const ticket=button('',()=>{if(offered){fn();return}toggleBook(true);guide.follow(g,i);if(!o.drink||g.guests[i].gotDrink)fn()},o.name+' · '+orderName(i));ticket.className='ticket';ticket.style.left=x/stage.w*100+'%';ticket.style.bottom='76%';attach(ticket,undefined,'guest/'+i)
+   ticket.append(tag('span',String(orderNumber(i)),'order-number'));ticket.append(tag('small',o.mode==='To go'?ounces(o.size)+' · To go':'Dine in'))
    const icons=tag('span','','ticket-icons');ticket.append(icons)
    if(o.drink&&!v.gotDrink){const r=cfg.recipes[o.drink];const cup=o.mode==='To go'?r.travelCup:r.cup,im=new Image();im.src=cup==='mug'?'/counter/mug-empty.webp':activeCupPath(activeCupId(cup,o.size));im.alt=cfg.cups[cup];icons.append(im);ticket.append(tag('small',cfg.cups[cup],'ticket-vessel'))}
-   if(o.food&&!v.gotFood){const im=new Image();im.alt='';im.src='/counter/'+(o.food==='pesto'?'grilled-pesto':o.food)+'.webp';icons.append(im)}
+   if(o.food&&!v.gotFood){const im=new Image();im.alt='';im.src=['madeleine','cookie','chips','brownie'].includes(o.food)?'/empire_snacks/empire_'+o.food+'.webp':'/counter/'+(o.food==='pesto'?'grilled-pesto':o.food)+'.webp';icons.append(im)}
    ticket.append(tag('strong',orderName(i)),tag('i'));ticket.dataset.guest=String(i);parent.append(guest,ticket)
   }}
   for(const n of parent.querySelectorAll<HTMLElement>('.ticket')){const i=Number(n.dataset.guest),f=g.guests[i].left/g.ticks(cfg.orders[i].patience),bar=n.lastElementChild as HTMLElement;const heldItem=drag?.active?drag.carry:offered;const eligible=!!heldItem&&(heldItem.kind==='food'||heldItem.kind==='cup')&&g.canServe(i,heldItem.kind,heldItem.slot,true);n.classList.toggle('eligible',eligible);bar.style.transform='scaleX('+f+')';bar.style.background=f<.2?'#bd5533':f<.5?'#bb893c':'#6d874d'}
@@ -603,7 +605,7 @@ async function open(){
   for(const {order} of foodOrders){
    const food=order.food!,label=cfg.foods[food].name
    const n=button('',()=>act({action:'to',view:order.end}),'Go to '+order.name+' at '+order.end)
-   const im=new Image();im.alt='';im.src='/counter/'+(food==='pesto'?'grilled-pesto':food)+'.webp'
+   const im=new Image();im.alt='';im.src=['madeleine','cookie','chips','brownie'].includes(food)?'/empire_snacks/empire_'+food+'.webp':'/counter/'+(food==='pesto'?'grilled-pesto':food)+'.webp'
    n.append(tag('small',order.end+' · '+order.name),im,tag('strong',label),tag('small',order.mode));checks.append(n)
   }
   if(!foodOrders.length)for(const end of unread)checks.append(button(end+' · Take order',()=>act({action:'to',view:end})))
@@ -625,7 +627,7 @@ async function open(){
   if(g.kitchen&&!['Kitchen','Food'].includes(panel))choose('Kitchen')
   if(el('shift-name').textContent!==shiftName(level))el('shift-name').textContent=shiftName(level)
   el('level').textContent=shiftName(level);el('coins').textContent=g.coins+' coins';el('count').textContent=g.served+' / '+g.guests.length+' served'
-  for(const id of ['Door','Window','Kitchen'] as const){const b=el(id.toLowerCase());b.setAttribute('aria-current',String(g.view===id));const waiting=g.guests.some((v,i)=>cfg.orders[i].end===id&&['waiting','ready'].includes(v.state));b.classList.toggle('waiting',waiting&&g.view!==id);b.textContent=id+(waiting&&g.view!==id?' •':'')}
+  for(const id of ['Door','Window','Kitchen'] as const){const b=el(id.toLowerCase());b.setAttribute('aria-current',String(g.view===id));const waiting=activeOrderIds(g).filter(i=>cfg.orders[i].end===id).length;b.classList.toggle('waiting',waiting>0&&g.view!==id);b.textContent=id;if(id==='Window'&&waiting){b.append(tag('span',String(waiting),'window-count'));b.setAttribute('aria-label',`Window · ${waiting} active orders`)}else b.setAttribute('aria-label',id)}
   el('area-switch').style.setProperty('--area',String(['Door','Window','Kitchen'].indexOf(g.view)))
   const kitchenNav=el('kitchen')
   kitchenNav.title=g.kitchen?'Kitchen':'Turn to the kitchen'

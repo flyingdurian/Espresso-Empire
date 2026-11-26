@@ -3,6 +3,10 @@ import type {HotBay} from './bench.ts'
 export const servicePass=stations
 // The staging rack is a separate source from every espresso group.
 export const reserveHead=-1
+export const juiceRack={x:1328,y:821,w:328,h:38,capacity:4}
+export function juiceSeat(i:number){return {x:juiceRack.x+juiceRack.w*(i+.5)/juiceRack.capacity,y:851,h:76}}
+export function juiceTouch(i:number){const p=juiceSeat(i);return {x:p.x,y:p.y-37,w:juiceRack.w/juiceRack.capacity-6,h:74}}
+
 export const foodBay=(bay:HotBay)=>bay==='oven'?stations.pastries:stations.panini
 export const bayFirst=(bay:HotBay)=>bay==='press'?0:stations.panini.capacity
 export const passFoodCount=stations.panini.capacity+stations.pastries.capacity
@@ -26,4 +30,10 @@ export function chooseShotPocket(count:number,free:(i:number)=>boolean,preferred
  if(preferred!==undefined)return Number.isInteger(preferred)&&preferred>=0&&preferred<count&&free(preferred)?preferred:-1
  for(let i=0;i<count;i++)if(free(i))return i
  return -1
+}
+
+/** Same jump profile as oven loading; the shot lands precisely at its pocket seat. */
+export function shotReserveArc(from:{x:number;y:number},to:{x:number;y:number},progress:number){
+ const p=Math.max(0,Math.min(1,progress))
+ return {x:from.x+(to.x-from.x)*p,y:from.y+(to.y-from.y)*p-Math.sin(Math.PI*p)*60,angle:Math.sin(Math.PI*p)*.08}
 }

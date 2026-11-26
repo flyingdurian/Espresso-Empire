@@ -57,6 +57,8 @@ export function levelConfig(base:Config,level:number,ranks:UpgradeRanks):Config{
   const service=level===piazzaShift?piazza:level===lunchShift?forno:breakfast
   if(level===lunchShift)cfg.startView='Kitchen'
   cfg.orders=structuredClone(service.orders) as Order[]
+  // Longer manual equipment cycles need additional time at the counter.
+  cfg.orders.forEach(o=>{o.patience=Math.ceil(o.patience*1.4)})
   cfg.partialRelief=service.partialRelief
   cfg.ovenGrace=service.ovenGrace
   cfg.pressGrace=service.pressGrace
@@ -67,12 +69,14 @@ export function levelConfig(base:Config,level:number,ranks:UpgradeRanks):Config{
  cfg.orders=Array.from({length:stage.tickets},(_,i):Order=>{
   const template=base.orders[i%base.orders.length],archetype=archetypes[i%archetypes.length],f=archetypeFactors[archetype]
   const drink=stage.menu[i%stage.menu.length]
+  const modifiers:Partial<Record<string,NonNullable<Order['toppings']>>>={latte:['caramelDrizzle'],cappuccino:['cocoaDust'],vanillalatte:['strawberryDrizzle'],hotcocoa:['cinnamonDust'],mocha:['cinnamonDust'],frappe:['caramelDrizzle']}
+  const toppings=level>=4?modifiers[drink]:undefined
   const withFood=stage.foods>0&&i%3===1&&Math.floor(i/3)<stage.foods
   const food=withFood?(['brownie','baked','grilled','pesto'] as const)[Math.floor(i/3)%4]:null
   const toGo=level>=4?(i%3!==0):i%3===1
   return {...template,name:names[i%names.length],look:campaign.looks[i%campaign.looks.length],end:i%2?'Window':'Door',spot:Math.floor(i/2)%2,
    mode:toGo?'To go':'Dine in',size:toGo?(i%2===0?'Large':'Small'):'Medium',
-   drink,food,after:i*stage.pace,patience:Math.round(template.patience*stage.patience*f.patience),archetype,tipMultiplier:f.tip}
+   drink,food,toppings,after:i*stage.pace,patience:Math.round(template.patience*stage.patience*f.patience),archetype,tipMultiplier:f.tip}
  })
  return cfg
 }

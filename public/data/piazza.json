@@ -108,6 +108,45 @@
       "after": 72,
       "patience": 100,
       "archetype": "Regular"
+    },
+    {
+      "end": "Door",
+      "spot": 0,
+      "look": "e",
+      "name": "Marco",
+      "mode": "Dine in",
+      "size": "Medium",
+      "drink": "caramelmocha",
+      "food": "madeleine",
+      "after": 105,
+      "patience": 135,
+      "archetype": "Regular"
+    },
+    {
+      "end": "Window",
+      "spot": 0,
+      "look": "c",
+      "name": "Sofia",
+      "mode": "To go",
+      "size": "Small",
+      "drink": "cherrytea",
+      "food": "cookie",
+      "after": 122,
+      "patience": 130,
+      "archetype": "Tourist"
+    },
+    {
+      "end": "Door",
+      "spot": 1,
+      "look": "b",
+      "name": "Elena",
+      "mode": "Dine in",
+      "size": "Medium",
+      "drink": "matchafrappe",
+      "food": "chips",
+      "after": 139,
+      "patience": 140,
+      "archetype": "Student"
     }
   ]
 }

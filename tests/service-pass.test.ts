@@ -16,15 +16,15 @@ test('a full mixed shot reserve preserves portions and frees each group for the 
   g.command({action:'parkShot',head,lane:0,pocket:i})
   assert.equal(g.groups[head].pots[0],null);assert.equal(g.shotReserve[i],shot)
  }
- g.command({action:'pull',shot:'short',head:0,lane:0});run(g,config.stations.short)
- g.command({action:'parkShot',head:0,lane:0,pocket:0})
- assert.equal(g.groups[0].pots[0],'short');assert.equal(g.shotReserve[0],'standard')
+ g.command({action:'pull',shot:'short',head:2,lane:0});run(g,config.stations.short)
+ g.command({action:'parkShot',head:2,lane:0,pocket:0})
+ assert.equal(g.groups[2].pots[0],'short');assert.equal(g.shotReserve[0],'standard')
  g.command({action:'cup',cup:'demi'})
  g.command({action:'dropPour',pour:{action:'pour',head:reserveHead,lane:1,slot:0}})
  assert.equal(g.shotReserve[1],null)
- g.command({action:'parkShot',head:0,lane:0,pocket:1});assert.equal(g.groups[0].pots[0],'short')
+ g.command({action:'parkShot',head:2,lane:0,pocket:1});assert.equal(g.groups[2].pots[0],'short')
  run(g,config.stations.transfer);assert.equal(g.recipe(g.cups[0]),'ristretto')
- g.command({action:'parkShot',head:0,lane:0,pocket:1});assert.equal(g.shotReserve[1],'short')
+ g.command({action:'parkShot',head:2,lane:0,pocket:1});assert.equal(g.shotReserve[1],'short')
 })
 test('food wells preserve individual pesto portions, capacity, and partial delivery',()=>{
  const cfg=structuredClone(config)
@@ -32,7 +32,7 @@ test('food wells preserve individual pesto portions, capacity, and partial deliv
  const g=new Bench(cfg,tuning)
  for(let i=0;i<5;i++){
   g.command({action:'sandwich',slot:0})
-  if(i%2===1)g.command({action:'pesto',slot:0})
+  if(i%2===1){g.command({action:'pesto',slot:0});run(g,cfg.stations.pesto)}
   g.command({action:'press',slot:0});run(g,cfg.stations.press)
   g.command({action:'bankHot',station:'press',slot:0})
  }

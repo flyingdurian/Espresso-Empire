@@ -32,7 +32,7 @@ export function portafilterPose(g:Bench,now=g.tick):PortafilterPose{
  if(stage==='emptyHeld')return {...L.grinderHand,angle:-.14,grounds:false}
  if(stage==='grinding'||stage==='dosed')return {...L.grinder,angle:-.08,grounds:stage==='dosed'}
  if(stage==='dosedHeld')return {...L.grinderHand,angle:-.13,grounds:true}
- if(stage==='atTamp'||stage==='tamping'||stage==='tamped')return {...L.mat,angle:-.1,grounds:true}
+ if(stage==='attached')return {...L.group,angle:-.1,grounds:true}
  if(stage==='locking'){
   const p=g.basketCycle?Math.min(1,Math.max(0,(now-g.basketCycle.start)/(g.basketCycle.end-g.basketCycle.start))):1
   const move=part(p,0,.7),turn=part(p,.67,1)

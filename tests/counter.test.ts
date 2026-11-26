@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {Bench,type Config,type Cup,type End,type Food,type Shot,type Size} from '../src/counter/bench.ts'
+import {Bench,ingredientStation,type Config,type Cup,type End,type Food,type Shot,type Size} from '../src/counter/bench.ts'
 import {readData} from '../scripts/read.ts'
 import {levelConfig,freshProgress,buyUpgrade,completeLevel,levels,lunchShift,piazzaShift} from '../src/counter/campaign.ts'
 import {espressoLayout,portafilterPose,knockPuckPosition} from '../src/counter/workflow.ts'
@@ -17,38 +17,43 @@ function pull(g:Bench,shot:Shot){
   if(!g.beans){g.command({action:'beans'});run(g,cfg.stations.load)}
   g.command({action:'pick'})
   g.command({action:'grind'});run(g,g.data.stations.grinder)
-  g.command({action:'dose'});g.command({action:'placeTamp'});g.command({action:'tamp'});run(g,cfg.stations.load)
-  g.command({action:'lock'});run(g,cfg.stations.load)
+  g.command({action:'attach',head:g.serviceHead});g.command({action:'lock'});run(g,cfg.stations.handleLock)
  }
  g.command({action:'pull',shot});run(g,cfg.stations[shot]);g.command({action:'pour'});run(g,cfg.stations.transfer)
 }
 function prepare(g:Bench,id:string,away=false,size:Size='Medium',frontOnly=false){
  const r=cfg.recipes[id],end=g.end
- if(r.add.includes('orange')&&g.orangeStock<(size==='Large'?cfg.capacity.largePortions:1)){g.command({action:'citrus'});run(g,cfg.stations.citrus)}
+ if(r.add.includes('orange')&&g.orangeSource(size==='Large'?cfg.capacity.largePortions:1)<0){
+  if(g.orangeDock===null)g.command({action:'moveOrange',from:g.orangeReserve.indexOf(0),to:-1})
+  g.command({action:'citrus'});run(g,cfg.stations.citrus)
+  g.command({action:'moveOrange',from:-1,to:3})
+ }
  for(const [add,action] of [['tea','tea'],['cold','blend']] as const){
   if(!r.add.includes(add))continue
   if(!frontOnly)to(g,'Kitchen');g.command({action});run(g,cfg.stations[action]);g.command({action});to(g,end)
  }
  cup(g,away?r.travelCup:r.cup,size)
  const same=g.cups[g.selected];assert.ok(same)
+ if(r.add.includes('ice')&&g.ice<(size==='Large'?cfg.capacity.largePortions:1)){g.command({action:'refillIce'});run(g,cfg.stations.refillIce)}
+ if((r.add.includes('milk')||r.add.includes('foam'))&&!g.milkTank){g.command({action:'refillMilk'});run(g,cfg.stations.refillMilk+.8)}
  if(r.add.includes('foam')&&!g.textures.airy){g.command({action:'steam',texture:'airy'});run(g,cfg.stations.steamer)}
  if(r.add.includes('milk')&&!g.milk){g.command({action:'steam'});run(g,cfg.stations.steamer)}
  if(r.shot)pull(g,r.shot)
- for(const add of r.add){g.command({action:'add',add});run(g,cfg.stations.finish);assert.equal(g.cups[g.selected],same)}
+ for(const add of r.add){g.command({action:'add',add});run(g,g.data.stations[ingredientStation(add)]+(add==='water'?.8:0));assert.equal(g.cups[g.selected],same)}
  assert.equal(g.recipe(same),id)
 }
 function cook(g:Bench,food:Food,frontOnly=false){
  const end=g.end;if(!frontOnly)to(g,'Kitchen')
- if(food==='brownie')g.command({action:'brownie'})
+ if(food==='brownie'||food==='madeleine'||food==='cookie'||food==='chips')g.command({action:'snack',food})
  else if(food==='baked'){g.command({action:'load'});g.command({action:'oven'});run(g,cfg.stations.oven);g.command({action:'oven'})}
- else {g.command({action:'sandwich'});if(food==='pesto')g.command({action:'pesto'});g.command({action:'press'});run(g,cfg.stations.press);g.command({action:'press'})}
+ else {g.command({action:'sandwich'});if(food==='pesto'){g.command({action:'pesto'});run(g,g.data.stations.pesto)}g.command({action:'press'});run(g,cfg.stations.press);g.command({action:'press'})}
  to(g,end);assert.equal(g.towel[g.foodIndex]?.food,food)
 }
 for(const id of Object.keys(cfg.recipes))for(const away of [false,true])test(id+' in '+(away?'takeaway':'dine-in')+' vessel',()=>{
  const g=create();prepare(g,id,away);g.command({action:'lid'});assert.equal(g.cups[0]?.lid,away)
 })
 test('cups never auto-pour; a pitcher transfers only on an explicit tap or drag command',()=>{
- const g=create();g.command({action:'pull',shot:'short'});cup(g,'demi');run(g,3)
+ const g=create();g.command({action:'pull',shot:'short'});cup(g,'demi');run(g,cfg.stations.short)
  assert.equal(g.pot,'short');assert.equal(g.cups[0]?.shot,null)
  g.command({action:'select',slot:1});cup(g,'demi');assert.equal(g.pot,'short')
  assert.equal(g.cups[1]?.shot,null);g.command({action:'select',slot:0});assert.equal(g.pot,'short')
@@ -73,13 +78,13 @@ test('drag disposal uses its source slot and disposable reserve is finite and si
 })
 test('three fast oven loads and two towel spaces preserve the remaining pastry',()=>{
  const g=create();to(g,'Kitchen');for(let i=0;i<4;i++)g.command({action:'load'});assert.equal(g.raw,3)
- g.command({action:'oven'});to(g,'Window');run(g,5);assert.equal(g.warm,3);to(g,'Kitchen')
+ g.command({action:'oven'});to(g,'Window');run(g,cfg.stations.oven);assert.equal(g.warm,3);to(g,'Kitchen')
  for(let i=0;i<3;i++)g.command({action:'oven'});assert.equal(g.warm,1);assert.equal(g.towel.filter(Boolean).length,2)
 })
 test('machines run through turns, hidden tickets open on proximity, visible patience continues',()=>{
  const g=create();assert.equal(g.command({action:'grind'}),'Pick up the empty portafilter and insert it in the grinder first')
  g.command({action:'steam'});g.command({action:'pull',shot:'standard'});run(g,4)
- to(g,'Kitchen');g.command({action:'sandwich'});g.command({action:'press'});run(g,8)
+ to(g,'Kitchen');g.command({action:'sandwich'});g.command({action:'press'});run(g,Math.max(cfg.stations.oven,cfg.stations.press))
  assert.equal(g.pot,'standard');assert.equal(g.milk,3);assert.equal(g.ground,0);assert.equal(g.pressState,'ready')
  assert.equal(g.guests[2].state,'ready');assert.ok(g.guests[0].left<g.ticks(cfg.orders[0].patience))
  to(g,'Window');assert.equal(g.guests[2].state,'waiting')
@@ -108,7 +113,7 @@ test('eight-ticket rehearsal completes on both ends and replays identically',()=
  };assert.deepEqual(play(),play())
 })
 
-test('spent portafilter must be knocked, ground into, removed, tamped and rotated into the group',()=>{
+test('spent portafilter must be knocked, pre-dosed, purged, attached and locked',()=>{
  const g=create(),cap=g.data.capacity
  g.command({action:'grind'});assert.equal(g.grind,null);assert.equal(g.beans,cap.startBeans)
  for(let n=0;n<cap.basketDoses;n++){
@@ -126,14 +131,12 @@ test('spent portafilter must be knocked, ground into, removed, tamped and rotate
  g.command({action:'pick'});assert.equal(g.basket,'emptyHeld')
  g.command({action:'grind'});assert.equal(g.basket,'grinding');assert.equal(g.grinding,cap.basketDoses)
  run(g,g.data.stations.grinder-.05);assert.equal(g.basket,'grinding');run(g,.05);assert.equal(g.basket,'dosed')
- assert.equal(g.command({action:'lock'}),'Tamp the fresh grounds before locking the group')
+ assert.equal(g.command({action:'lock'}),'Attach the pre-tamped portafilter first')
  g.command({action:'dose'});assert.equal(g.basket,'dosedHeld')
- g.command({action:'placeTamp'});assert.equal(g.basket,'atTamp')
- g.command({action:'tamp'});run(g,g.data.stations.load);assert.equal(g.basket,'tamped')
- g.command({action:'lock'});assert.equal(g.basket,'tamped');g.command({action:'purge'});run(g,cfg.stations.purge);
- g.command({action:'lock'});assert.equal(g.basket,'locking');run(g,g.data.stations.load)
+ g.command({action:'attach',head:0});assert.equal(g.basket,'dosedHeld');g.command({action:'purge'});run(g,cfg.stations.purge)
+ g.command({action:'attach',head:0});assert.equal(g.basket,'attached');g.command({action:'lock'});assert.equal(g.basket,'locking');run(g,g.data.stations.handleLock)
  assert.equal(g.basket,'mounted');assert.equal(g.pulls,cap.basketDoses);assert.equal(g.ground,0)
- assert.equal(g.beans,0)
+ assert.equal(g.beans,cap.startBeans-cap.basketDoses)
 })
 test('portafilter basket follows shared physical anchors and puck falls inside the bin',()=>{
  const g=create();g.pulls=0;g.command({action:'release'});run(g,cfg.stations.load)
@@ -145,17 +148,14 @@ test('portafilter basket follows shared physical anchors and puck falls inside t
  assert.ok(puck&&puck.y>=744&&puck.y<793,'puck falls into, not outside, the box')
  run(g,.45);assert.equal(g.basket,'clean');assert.equal(knockPuckPosition(g),null)
  g.command({action:'pick'});g.command({action:'grind'});assert.equal(portafilterPose(g).x,espressoLayout.grinder.x)
- run(g,g.data.stations.grinder);g.command({action:'dose'});g.command({action:'placeTamp'})
- assert.equal(portafilterPose(g).x,espressoLayout.mat.x)
- assert.ok(espressoLayout.mat.x<espressoLayout.group.x,'tamp mat is on the far left')
+ run(g,g.data.stations.grinder);assert.equal(portafilterPose(g).x,espressoLayout.grinder.x)
+ g.command({action:'purge'});run(g,cfg.stations.purge);g.command({action:'attach',head:0});assert.equal(g.basket,'attached')
 })
-test('tamping requires a separate mat placement; drag move-to-mat remains possible',()=>{
- const g=create();g.basket='dosed'
- assert.match(g.command({action:'tamp'}),/Place the filled basket/)
- assert.equal(g.basket,'dosed')
- assert.match(g.command({action:'moveToTamp'}),/moved to tamp mat/)
- assert.equal(g.basket,'atTamp')
- g.command({action:'tamp'});assert.equal(g.basket,'tamping')
+test('retired tamp commands do not change a loaded portafilter; purge is mandatory',()=>{
+ const g=create();g.basket='dosed';g.groups[0].dirty=true
+ for(const action of ['tamp','moveToTamp','placeTamp'] as const){assert.match(g.command({action}),/Tamping retired/);assert.equal(g.basket,'dosed')}
+ g.command({action:'attach',head:0});assert.equal(g.basket,'dosed');g.command({action:'purge'});run(g,cfg.stations.purge)
+ g.command({action:'attach',head:0});assert.equal(g.basket,'attached')
 })
 test('portrait camera preserves the full scene height, crops horizontally and clamps to ends',()=>{
  const a=cameraOffset(180,390,620),b=cameraOffset(1550,390,620)
@@ -170,7 +170,7 @@ test('iced takeaway accepts ice before an explicit espresso transfer; clear cup 
  assert.deepEqual(g.cups[0]?.add,['ice']);assert.equal(g.cups[0]?.shot,null)
  g.command({action:'pull',shot:'standard'});run(g,cfg.stations.standard)
  assert.equal(g.canTransfer(0),true);g.command({action:'pour',slot:0});run(g,cfg.stations.transfer)
- assert.equal(g.cups[0]?.shot,'standard');g.command({action:'add',add:'coldmilk'});run(g,cfg.stations.finish)
+ assert.equal(g.cups[0]?.shot,'standard');g.command({action:'add',add:'coldmilk'});run(g,cfg.stations.coldmilk)
  assert.equal(g.recipe(g.cups[0]),'iced')
  g.command({action:'cup',cup:'clear',size:'Small',slot:1});assert.equal(g.cups[1]?.shot,null)
  g.command({action:'trash',target:{kind:'drink',slot:0}});g.command({action:'pull',shot:'standard'});run(g,cfg.stations.standard)
@@ -215,13 +215,13 @@ test('all six pitchers retain independent shots across concurrent pulls, transfe
  const matrix=()=>g.groups.map(group=>group.pots.slice())
  for(const head of [0,1,2])g.command({action:'pull',shot:head===1?'short':'standard',head,lane:0})
  for(const head of [0,1,2])g.command({action:'pull',shot:'short',head,lane:1})
- assert.deepEqual(g.groups.map(v=>v.pulls),[5,5,5])
- run(g,3)
+ assert.deepEqual(g.groups.map(v=>v.pulls),[2,2,2])
+ run(g,cfg.stations.standard)
  for(const head of [0,1,2])g.command({action:'pull',shot:head===1?'standard':'short',head,lane:1})
- run(g,3)
+ run(g,cfg.stations.standard)
  assert.deepEqual(matrix(),[['standard','short'],['short','standard'],['standard','short']])
  g.command({action:'pull',shot:'short',head:1,lane:1})
- assert.deepEqual(g.groups.map(v=>v.pulls),[4,4,4])
+ assert.deepEqual(g.groups.map(v=>v.pulls),[1,1,1])
  cup(g,'clear','Small')
  assert.equal(g.cups[0]?.shot,null)
  g.command({action:'pour',head:1,lane:1,slot:0})
@@ -231,30 +231,30 @@ test('all six pitchers retain independent shots across concurrent pulls, transfe
  g.command({action:'trash',target:{kind:'shot',head:0,lane:1,slot:0}})
  assert.deepEqual(matrix(),[['standard',null],['short',null],['standard','short']])
  assert.equal(g.cups[0]?.shot,'standard')
- g.command({action:'pull',shot:'short',head:1,lane:1});run(g,3)
+ g.command({action:'pull',shot:'short',head:1,lane:1});run(g,cfg.stations.standard)
  assert.deepEqual(matrix(),[['standard',null],['short','short'],['standard','short']])
 })
 test('invalid pitcher addresses and a detached group leave other groups intact',()=>{
  const g=create()
  g.command({action:'pull',head:2,lane:4,shot:'standard'})
  g.command({action:'pull',head:8,lane:0,shot:'short'})
- assert.deepEqual(g.groups.map(v=>v.pulls),[6,6,6])
+ assert.deepEqual(g.groups.map(v=>v.pulls),[3,3,3])
  for(let i=0;i<cfg.capacity.basketDoses-1;i++){
-  g.command({action:'pull',head:2,lane:0,shot:'short'});run(g,2)
+  g.command({action:'pull',head:2,lane:0,shot:'short'});run(g,cfg.stations.short)
   g.command({action:'trash',target:{kind:'shot',head:2,lane:0,slot:0}})
  }
- g.command({action:'pull',head:2,lane:1,shot:'short'});run(g,2)
+ g.command({action:'pull',head:2,lane:1,shot:'short'});run(g,cfg.stations.short)
  g.command({action:'release',head:2})
  g.command({action:'pull',head:2,lane:0,shot:'short'})
- g.command({action:'pull',head:0,lane:0,shot:'short'});run(g,2)
+ g.command({action:'pull',head:0,lane:0,shot:'short'});run(g,cfg.stations.short)
  assert.deepEqual(g.groups.map(v=>v.pots),[['short',null],[null,null],[null,'short']])
  assert.equal(g.serviceHead,2)
 })
 test('free mixing preserves early ice and lets players make an unmatched drink',()=>{
  const g=create();cup(g,'mug');g.command({action:'add',add:'ice'});run(g,1)
  assert.equal(g.ice,cfg.capacity.ice-1)
- g.command({action:'refillIce'});assert.equal(g.ice,cfg.capacity.ice)
- pull(g,'standard');g.command({action:'add',add:'water'});run(g,1)
+ g.command({action:'refillIce'});run(g,cfg.stations.refillIce);assert.equal(g.ice,cfg.capacity.ice)
+ pull(g,'standard');g.command({action:'add',add:'water'});run(g,cfg.stations.water+.8)
  assert.deepEqual(g.cups[0]?.add,['ice','water'])
  assert.equal(g.recipe(g.cups[0]),undefined)
 })
@@ -274,9 +274,9 @@ test('tank and fridge conserve milk through exhaustion, double taps and partial 
  g.milkTank=1;g.command({action:'steam',texture:'airy'});run(g,cfg.stations.steamer)
  assert.equal(g.textures.airy,1);assert.equal(g.milkTank,0)
  g.command({action:'steam',texture:'silky'});assert.equal(g.steam,null)
- const before=g.milkReserve;g.command({action:'refillMilk'});g.command({action:'refillMilk'});run(g,cfg.stations.refillMilk)
+ const before=g.milkReserve;g.command({action:'refillMilk'});g.command({action:'refillMilk'});run(g,cfg.stations.refillMilk+.8)
  assert.equal(g.milkTank,cap.carton);assert.equal(g.milkReserve,before-cap.carton)
- g.command({action:'refillMilk'});run(g,cfg.stations.refillMilk);assert.equal(g.milkTank,cap.milkTank)
+ g.command({action:'refillMilk'});run(g,cfg.stations.refillMilk+.8);assert.equal(g.milkTank,cap.milkTank)
  assert.equal(g.milkReserve+g.milkTank,before)
 })
 test('only the detached head flushes, and its visible rinse completes before relocking',()=>{
@@ -284,14 +284,14 @@ test('only the detached head flushes, and its visible rinse completes before rel
  g.command({action:'release',head:1});assert.ok(g.groups[1].dirty)
  g.command({action:'purge',head:2});assert.equal(g.groups[2].flush,null)
  g.command({action:'purge'});assert.ok(g.groups[1].flush);assert.equal(g.groups[0].flush,null)
- g.command({action:'pull',head:0,lane:0,shot:'short'});run(g,3)
+ g.command({action:'pull',head:0,lane:0,shot:'short'});run(g,cfg.stations.short)
  assert.equal(g.groups[1].dirty,false);assert.equal(g.groups[0].pots[0],'short')
 })
 test('food bin loads are individually animated and cooking needs a separate command',()=>{
  const g=create();g.command({action:'load'});g.command({action:'load'});g.command({action:'sandwich'})
  assert.deepEqual(g.foodFlights.map(f=>[f.food,f.slot]),[['raw',0],['raw',1],['panino',0]])
  run(g,2);assert.equal(g.foodFlights.length,0);assert.equal(g.bake,null);assert.equal(g.pressState,'loaded')
- g.command({action:'oven'});g.command({action:'press'});run(g,8);assert.equal(g.warm,2);assert.equal(g.pressState,'ready')
+ g.command({action:'oven'});g.command({action:'press'});run(g,Math.max(cfg.stations.oven,cfg.stations.press));assert.equal(g.warm,2);assert.equal(g.pressState,'ready')
 })
 
 import {drinkLook} from '../src/counter/drink-look.ts'
@@ -344,11 +344,11 @@ test('a rapid second drop waits for the exact chosen cup without reaching a repl
  const g=create();cup(g,'clear','Small');g.command({action:'cup',cup:'paper',size:'Small',slot:1})
  g.command({action:'dropPour',pour:{action:'add',add:'ice',slot:0}})
  g.command({action:'dropPour',pour:{action:'add',add:'cocoa',slot:0}})
- run(g,cfg.stations.finish*2+.1);assert.deepEqual(g.cups[0]?.add,['ice','cocoa']);assert.deepEqual(g.cups[1]?.add,[])
+ run(g,cfg.stations.finish+cfg.stations.syrup+.1);assert.deepEqual(g.cups[0]?.add,['ice','cocoa']);assert.deepEqual(g.cups[1]?.add,[])
  g.command({action:'dropPour',pour:{action:'add',add:'coldmilk',slot:0}})
  g.command({action:'dropPour',pour:{action:'add',add:'caramel',slot:1}})
  g.command({action:'returnCup',slot:1,cup:'paper',size:'Small'});g.command({action:'cup',cup:'paper',size:'Small',slot:1})
- assert.equal(g.pours.length,2);run(g,cfg.stations.finish*2+.1);assert.deepEqual(g.cups[1]?.add,['caramel'])
+ assert.equal(g.pours.length,2);run(g,Math.max(cfg.stations.coldmilk,cfg.stations.syrup)+.1);assert.deepEqual(g.cups[1]?.add,['caramel'])
 })
 
 test('breakfast rush supports shared demand, partial service, and a complete eight-guest shift',()=>{
@@ -410,7 +410,7 @@ test('each rack keeps its own bake and pickup time across the counter turn',()=>
 
 test('two press plates grill concurrently and only the explicitly seasoned and collected panino has pesto',()=>{
  const g=create()
- g.command({action:'sandwich',slot:1});g.command({action:'pesto',slot:1})
+ g.command({action:'sandwich',slot:1});g.command({action:'pesto',slot:1});run(g,cfg.stations.pesto)
  g.command({action:'press',slot:1});run(g,1)
  g.command({action:'sandwich'});g.command({action:'press',slot:0})
  assert.equal(g.pressSlots[0].pesto,false)
@@ -455,7 +455,7 @@ test('lunch opens in the kitchen, supports parallel plain and pesto service, and
  const g=new Bench(levelConfig(cfg,lunchShift,freshProgress().ranks),tuning)
  assert.equal(g.view,'Kitchen')
  for(const slot of [0,1])g.command({action:'sandwich',slot})
- g.command({action:'pesto',slot:1})
+ g.command({action:'pesto',slot:1});run(g,g.data.stations.pesto)
  for(const slot of [0,1])g.command({action:'press',slot})
  run(g,g.data.stations.press)
  for(const slot of [0,1])g.command({action:'press',slot,towelSlot:slot})
@@ -505,15 +505,13 @@ test('a full compactor keeps the dragged item, clears once, and keeps running th
 test('Caffè in Piazza can serve every guest entirely from the two front counter positions',()=>{
  const g=new Bench(levelConfig(cfg,piazzaShift,freshProgress().ranks),tuning)
  assert.equal(g.view,'Door')
- g.command({action:'load'});g.command({action:'oven',slot:0})
  for(const [i,order] of g.data.orders.entries()){
   to(g,order.end)
   for(let n=0;n<g.ticks(100)&&g.guests[i].state!=='waiting';n++)g.step()
   assert.equal(g.guests[i].state,'waiting')
   if(order.drink){prepare(g,order.drink,order.mode==='To go',order.size,true);g.command({action:'serve',guest:i,kind:'cup',slot:g.selected})}
   if(order.food){
-   if(i===0&&g.warm)g.command({action:'oven',slot:0})
-   else cook(g,order.food,true)
+   cook(g,order.food,true)
    g.command({action:'serve',guest:i,kind:'food',slot:g.foodIndex})
   }
  }

@@ -1,13 +1,13 @@
 import type {Bench} from './bench.ts'
 import {stockKey,takeCup} from './bench.ts'
 import {holders,type Holder,type Carry} from './station-layout.ts'
-import {cupColumns,lidColumns,curatedStackParts,exactStockState,stackTouch,type StackSpec} from './cup-stack-spec.ts'
+import {cupColumns,lidColumns,curatedStackParts,fixedStockFrame,exactStockState,stackFrames,stackTouch,stackCount,safeStackOffset,rackArt,type StackSpec} from './cup-stack-spec.ts'
 import type {LayerMap} from './layer-overrides.ts'
 
 type ImagePainter=(id:string,x:number,y:number,w:number,h:number)=>void
 type ObjectPainter=(id:string,x:number,y:number,h:number,angle?:number)=>void
 type LayerPainter=(id:string,x:number,y:number,w:number,h:number,draw:()=>void)=>void
-export const rackArt={china:{x:14,y:748,w:357,h:188},takeaway:{x:593,y:747,w:561,h:153}}
+export {rackArt} from './cup-stack-spec.ts'
 const column=(b:Holder)=>cupColumns.find(c=>c.cup===b.cup&&c.size===b.size)!
 export function holderTouch(b:Holder,capacity=5){return stackTouch(column(b),capacity,b.w)}
 export const lidSeats=lidColumns
@@ -19,7 +19,8 @@ export function drawCupRacks(ctx:CanvasRenderingContext2D,image:ImagePainter,_pr
  layer('china-rack',china.x,china.y,china.w,china.h,()=>image('china-rack-single',china.x,china.y,china.w,china.h))
  layer('takeaway-rack',travel.x,travel.y,travel.w,travel.h,()=>image('takeaway-rack',travel.x,travel.y,travel.w,travel.h))
  function paint(s:StackSpec,count:number,capacity:number,width:number){
-  const offset=overrides[s.id]?.stackOffset??s.offset
+  const offset=safeStackOffset(s,s.stockHeights?s.offset:overrides[s.id]?.stackOffset??s.offset)
+  count=stackCount(count,capacity)
   const hit=stackTouch({...s,offset},capacity,width)
   layer(s.id,hit.x-hit.w/2,hit.y-hit.h/2,hit.w,hit.h,()=>{
    if(!count)return
@@ -27,11 +28,25 @@ export function drawCupRacks(ctx:CanvasRenderingContext2D,image:ImagePainter,_pr
    const shade=ctx.createRadialGradient(0,0,.05,0,0,1)
    shade.addColorStop(0,'rgba(37,22,13,.55)');shade.addColorStop(1,'rgba(37,22,13,0)')
    ctx.fillStyle=shade;ctx.fillRect(-1,-1,2,2);ctx.restore()
+   if(s.stockHeights){
+    const f=fixedStockFrame(s,count,capacity)
+    if(f)image(f.id,f.x,f.y,f.w,f.h)
+    return
+   }
+   if(s.stackMode==='single'){
+    // Complete, constant-width vessels; only exposed bands of lower nested cups/lids
+    // are painted, so the clear plastic never accumulates overlapping alpha layers.
+    for(const f of stackFrames(s,count,capacity,offset)){
+     ctx.save();ctx.beginPath();ctx.rect(f.x,f.visibleFrom,f.w,f.visibleTo-f.visibleFrom);ctx.clip()
+     image(s.id,f.x,f.y,f.w,f.h);ctx.restore()
+    }
+    return
+   }
    const exact=exactStockState(s,count,offset)
    if(exact){const height=s.h*(1+(count-1)*offset);image(exact,s.x-s.w/2,s.y-height,s.w,height)}
    else for(const f of curatedStackParts(s,count,capacity,offset))image(f.id,f.x,f.y,f.w,f.h)
   })
  }
- for(const [i,b] of holders.entries())paint(cupColumns[i],g.stock[stockKey(b.cup,b.size)],takeCup(b.cup)?g.data.capacity.takeaway:g.data.capacity.ceramic,b.w)
+ for(const b of holders)paint(column(b),g.stock[stockKey(b.cup,b.size)],takeCup(b.cup)?g.data.capacity.takeaway:g.data.capacity.ceramic,b.w)
  for(const s of lidColumns)paint(s,g.lidStock[s.cup],g.lidCapacity,66)
 }

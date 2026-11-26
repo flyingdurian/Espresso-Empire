@@ -6,23 +6,28 @@ export type End='Door'|'Window'
 export type Cup='demi'|'mug'|'glass'|'bowl'|'tall'|'paper'|'clear'
 export type LidMaterial='paper'|'clear'
 export type Size='Small'|'Medium'|'Large'
-export type Food='brownie'|'baked'|'grilled'|'pesto'
+export type Snack='brownie'|'madeleine'|'cookie'|'chips'
+export type Food=Snack|'baked'|'grilled'|'pesto'
 export type Mode='Dine in'|'To go'
 export type Shot='short'|'standard'
 export type Texture='airy'|'silky'
-export type Add='milk'|'water'|'cold'|'foam'|'ice'|'coldmilk'|'tea'|'cocoa'|'matcha'|'caramel'|'vanilla'|'cherry'|'orange'
-export type Station='knock'|'handleTravel'|'handleLock'|'grinder'|'steamer'|'oven'|Shot|'transfer'|'finish'|'load'|'service'|'turn'|'entrance'|'departure'|'press'|'tea'|'blend'|'lid'|'compact'|'wash'|'dishReturn'|'microwave'|'purge'|'foodFlight'|'refillMilk'|'fridgeDoor'|'citrus'
+export const toppingKeys=['strawberryDrizzle','caramelDrizzle','cinnamonDust','cocoaDust'] as const
+export type Topping=typeof toppingKeys[number]
+export const isTopping=(a:string):a is Topping=>(toppingKeys as readonly string[]).includes(a)
+export type Add=Topping|'milk'|'water'|'cold'|'foam'|'ice'|'coldmilk'|'tea'|'cocoa'|'matcha'|'caramel'|'vanilla'|'cherry'|'orange'
+export type Station='knock'|'handleTravel'|'handleLock'|'grinder'|'steamer'|'oven'|Shot|'transfer'|'finish'|'load'|'service'|'turn'|'entrance'|'departure'|'press'|'tea'|'blend'|'lid'|'compact'|'wash'|'dishReturn'|'microwave'|'purge'|'foodFlight'|'refillMilk'|'fridgeDoor'|'citrus'|'water'|'syrup'|'coldmilk'|'pesto'|'refillIce'
+export function ingredientStation(add:Add):Station{return add==='water'?'water':add==='coldmilk'?'coldmilk':['caramel','cocoa','vanilla','matcha','cherry'].includes(add)?'syrup':'finish'}
 export type Recipe={name:string;cup:Cup;travelCup:Cup;shot:Shot|null;add:Add[];price:number}
-export type Order={end:End;spot:number;look:string;name:string;mode:Mode;size:Size;drink:string|null;food:Food|null;after:number;patience:number;archetype?:'Regular'|'Student'|'Remote worker'|'Tourist'|'Critic';tipMultiplier?:number}
+export type Order={end:End;spot:number;look:string;name:string;mode:Mode;size:Size;drink:string|null;food:Food|null;after:number;patience:number;archetype?:'Regular'|'Student'|'Remote worker'|'Tourist'|'Critic';tipMultiplier?:number;toppings?:Topping[]}
 export type Config={startView?:End|'Kitchen';seed:number;tickMs:number;stations:Record<Station,number>;capacity:{milkTank:number;carton:number;milkCartons:number;finishPortions:number;bin:number;heads:number;pitchers:number;ice:number;hopper:number;startBeans:number;basketDoses:number;beanBags:number;startGround:number;grindBatch:number;milkBatch:number;oven:number;press:number;saucers:number;towel:number;citrus:number;tea:number;blend:number;largePortions:number;ceramic:number;takeaway:number;lids?:number;reserve:number;wash:number};
  cups:Record<Cup,string>;finishes:Record<Add,string>;foods:Record<Food,{name:string;price:number}>;recipes:Record<string,Recipe>;orders:Order[];partialRelief?:number;ovenGrace?:number;pressGrace?:number;ovenWarning?:number;jitterSeconds:number}
 export type Drink={uid:number;cup:Cup;size:Size;shot:Shot|null;add:Add[];poured:boolean;lid:boolean;placed:number}
 export type Serving={food:Food}
 export const takeCup=(cup:Cup)=>cup==='paper'||cup==='clear'
 type Guest={received:Delivery|null;gotDrink:boolean;gotFood:boolean;state:'queued'|'joining'|'line'|'walking'|'ready'|'waiting'|'paid'|'leaving'|'gone';fromLine:boolean;since:number;left:number;arrival:number}
-type Cycle={start:number;end:number}
+type Cycle={start:number;end:number;approachStart?:number;returnEnd?:number}
 export type HotBay='oven'|'press'
-export type HotSlot={state:'empty'|'loaded'|'cooking'|'ready'|'burnt';since:number;cook:Cycle|null;deadline:number|null;pesto:boolean;pestoAt?:number}
+export type HotSlot={state:'empty'|'loaded'|'cooking'|'ready'|'burnt';since:number;cook:Cycle|null;deadline:number|null;pesto:boolean;pestoAt?:number;pestoJob?:Cycle}
 type KitchenOutput=Cycle&{station:HotBay;slot:number;towelSlot:number;food:Food;item:Serving}
 const emptyHotSlot=(tick:number):HotSlot=>({state:'empty',since:tick,cook:null,deadline:null,pesto:false})
 type Pour=Cycle&{slot:number;action:'transfer'|Add;head?:number;lane?:number}
@@ -30,13 +35,13 @@ export type Delivery=Cycle&{guest:number;slot:number;drink:Drink|null;food:Servi
 export const sizes:Size[]=['Small','Medium','Large']
 export const stockKey=(cup:Cup,size:Size='Medium')=>takeCup(cup)?cup+'-'+size:cup
 export type WasteTarget={kind:'drink'|'food'|'shot';slot:number;head?:number;lane?:number}
-export type Basket='mounted'|'released'|'held'|'knocking'|'clean'|'emptyHeld'|'grinding'|'dosed'|'dosedHeld'|'atTamp'|'tamping'|'tamped'|'locking'
+export type Basket='mounted'|'released'|'held'|'knocking'|'clean'|'emptyHeld'|'grinding'|'dosed'|'dosedHeld'|'atTamp'|'tamping'|'tamped'|'attached'|'locking'
 export type Group={dirty:boolean;flush:Cycle|null;pulls:number;pots:(Shot|null)[];extraction:(Cycle&{shot:Shot;lane:number})|null}
-type DirectedPour={action:'add';slot:number;add:Add}|{action:'pour';slot:number;head:number;lane:number}
-export type Input={action:'parkShot';head:number;lane:number;pocket:number}|{action:'bankHot';station:HotBay;slot?:number;dragged?:boolean}|{action:'serviceGroup';head:number}|{action:'grinderLever'}|{action:'dropPour';pour:DirectedPour}|{action:'purge';head?:number}|{action:'steam';texture?:Texture}|{action:'refillMilk'}|{action:'beans';bag?:number}|{action:'releaseKnock'|'pick'|'knock'|'dose'|'placeTamp'|'moveToTamp'|'tamp'|'lock'}|{action:'release';head?:number}|{action:'refillIce'|'heat'}|{action:'returnCup';slot:number;cup:Cup;size:Size}|{action:'returnBrownie';slot:number}|{action:'trash';target:WasteTarget}|{action:'restock';cup:Cup;size:Size}|{action:'lid';material?:LidMaterial}|{action:'restockLid';material:LidMaterial}|{action:'drawer'|'washLoad'|'washRun'}|{action:'pull';shot:Shot;head?:number;lane?:number}|{action:'cup';cup:Cup;size?:Size;slot?:number}|{action:'add';add:Add;slot?:number}|{action:'select'|'food';slot:number}|{action:'guest';guest:number}|{action:'serve';guest:number;kind:'cup'|'food';slot:number}|{action:'pour';slot?:number;head?:number;lane?:number}|{action:'to';view:End|'Kitchen'}|{action:'load'|'sandwich'|'pesto';slot?:number;dragged?:boolean}|{action:HotBay;slot?:number;towelSlot?:number;dragged?:boolean}|{action:'grind'|'discard'|'compact'|'brownie'|'tea'|'blend'|'citrus'}
+type DirectedPour={action:'add';slot:number;add:Add;pitcher?:number}|{action:'pour';slot:number;head:number;lane:number}
+export type Input={action:'restockAll'}|{action:'snack';food:Snack}|{action:'attach';head:number}|{action:'moveOrange';from:number;to:number}|{action:'bankShots'}|{action:'parkShot';head:number;lane:number;pocket:number}|{action:'bankHot';station:HotBay;slot?:number;dragged?:boolean}|{action:'serviceGroup';head:number}|{action:'grinderLever'}|{action:'dropPour';pour:DirectedPour}|{action:'purge';head?:number}|{action:'steam';texture?:Texture}|{action:'refillMilk'}|{action:'beans';bag?:number}|{action:'releaseKnock'|'pick'|'knock'|'dose'|'placeTamp'|'moveToTamp'|'tamp'|'lock'}|{action:'release';head?:number}|{action:'refillIce'|'heat'}|{action:'returnCup';slot:number;cup:Cup;size:Size}|{action:'returnBrownie';slot:number}|{action:'trash';target:WasteTarget}|{action:'restock';cup:Cup;size:Size}|{action:'lid';material?:LidMaterial}|{action:'restockLid';material:LidMaterial}|{action:'drawer'|'washLoad'|'washRun'}|{action:'pull';shot:Shot;head?:number;lane?:number}|{action:'cup';cup:Cup;size?:Size;slot?:number}|{action:'add';add:Add;slot?:number;pitcher?:number}|{action:'select'|'food';slot:number}|{action:'guest';guest:number}|{action:'serve';guest:number;kind:'cup'|'food';slot:number}|{action:'pour';slot?:number;head?:number;lane?:number}|{action:'to';view:End|'Kitchen'}|{action:'load'|'sandwich'|'pesto';slot?:number;dragged?:boolean}|{action:HotBay;slot?:number;towelSlot?:number;dragged?:boolean}|{action:'grind'|'discard'|'compact'|'brownie'|'tea'|'blend'|'citrus'}
 export class Bench{
  data:Config;tuning:Tuning;tick=0;age=0;started=false;end:End='Door';kitchen=false;turn:(Cycle&{to:End|'Kitchen'})|null=null;seed:number
- groups:Group[];serviceHead=0;ice:number;microwave:Cycle|null=null;microReady=false
+ groups:Group[];serviceHead=0;ice:number;iceRefill:Cycle|null=null;microwave:Cycle|null=null;microReady=false
  get pulls(){return this.groups[this.serviceHead].pulls} set pulls(n:number){this.groups[this.serviceHead].pulls=n}
  assistedService=false
  bagCounts:number[];basket:Basket='mounted';bags:number;basketMoved=-1000;basketCycle:Cycle|null=null
@@ -71,6 +76,36 @@ export class Bench{
   const item=from[i];if(item)from[i]=null
   return item
  }
+ /** Shots reserved by a queued or active pour must not be taken by the reserve shortcut. */
+ canBankShot(head:number,lane:number){
+  const group=this.groups[head]
+  return !!group?.pots[lane]&&group.extraction?.lane!==lane&&!this.pouringFrom('transfer',head,lane)&&
+   ![...this.pending.values()].some(({command})=>command.action==='pour'&&command.head===head&&command.lane===lane)
+ }
+ private parkShot(head:number,lane:number,pocket:number,delay=0){
+  const bank=this.groups[head]?.pots,shot=bank?.[lane]
+  if(!bank||!shot||!this.canBankShot(head,lane))return false
+  if(this.shotReserve[pocket]!==null||this.pouringFrom('transfer',reserveHead,pocket))return false
+  bank[lane]=null;this.shotReserve[pocket]=shot
+  const {start,end}=this.cycle('foodFlight')
+  this.stagedShotMotion.set(pocket,{start:start+delay,end:end+delay,head,lane})
+  return true
+ }
+ private bankShots(){
+  // Re-evaluate the minority after each transfer. Equal counts prefer short; within
+  // a type use stable group/pitcher order. Never move already reserved pours.
+  let moved=0
+  for(let pocket=0;pocket<this.shotReserve.length;pocket++){
+   if(this.shotReserve[pocket]!==null||this.pouringFrom('transfer',reserveHead,pocket))continue
+   const short=this.shotReserve.filter(s=>s==='short').length,standard=this.shotReserve.filter(s=>s==='standard').length
+   const preferred:Shot=short<=standard?'short':'standard'
+   const ready=this.groups.flatMap((group,head)=>group.pots.flatMap((shot,lane)=>shot&&this.canBankShot(head,lane)?[{head,lane,shot}]:[]))
+   const source=ready.find(s=>s.shot===preferred)??ready[0]
+   if(!source)break
+   if(this.parkShot(source.head,source.lane,pocket,moved*this.ticks(.10)))moved++
+  }
+  return moved?this.log(`Staged ${moved} shot${moved===1?'':'s'}`):this.shotReserve.every(s=>s!==null)?'Shot reserve full':'No available shots or open pockets'
+ }
  private stageHot(station:HotBay,slot?:number,dragged=false){
   const first=bayFirst(station),end=first+foodBay(station).capacity
   const pocket=this.foodReserve.findIndex((item,i)=>i>=first&&i<end&&!item)
@@ -85,9 +120,32 @@ export class Bench{
   return this.pours.some(job=>job.action===action&&(action!=='transfer'||job.head===head&&job.lane===lane))
  }
  cups:(Drink|null)[];selected=0;source:'cup'|'food'='cup';foodIndex=0;towel:(Serving|null)[]
- citrus:Cycle|null=null;orangeStock=0
+ citrus:Cycle|null=null
+ orangeDock:number|null=0
+ readonly orangeReserve:(number|null)[]=[0,null,null,null]
+ get orangeStock(){return this.orangeReserve.reduce<number>((sum,p)=>sum+(p??0),0)}
+ orangeSource(need:number,preferred?:number){
+  const usable=(i:number)=>Number.isInteger(i)&&i===3&&(this.orangeReserve[i]??0)>=need
+  return preferred===undefined?this.orangeReserve.findIndex((_,i)=>usable(i)):usable(preferred)?preferred:-1
+ }
+ canMoveOrange(from:number,to:number){
+  if(this.done||this.turn||this.kitchen||from===to)return false
+  if(![-1,0,3].includes(from)||![-1,0,3].includes(to))return false
+  const stock=from===-1?this.orangeDock:this.orangeReserve[from]
+  if(stock===null||stock===undefined||from===-1&&this.citrus)return false
+  if(from!==-1&&(this.pours.some(p=>p.action==='orange'&&p.lane===from)||[...this.pending.values()].some(p=>p.command.action==='add'&&p.command.add==='orange'&&p.command.pitcher===from)))return false
+  if(to===-1)return this.orangeDock===null&&stock===0
+  return this.orangeReserve[to]===null&&(to===0?stock===0:stock>0)
+ }
+ moveOrange(from:number,to:number){
+  if(!this.canMoveOrange(from,to))return 'Choose the empty-pitcher seat, juice seat, or press dock'
+  const stock=from===-1?this.orangeDock:this.orangeReserve[from]
+  if(from===-1)this.orangeDock=null;else this.orangeReserve[from]=null
+  if(to===-1)this.orangeDock=stock;else this.orangeReserve[to]=stock
+  return this.log(to===-1?'Empty juice pitcher docked':stock?'Juice pitcher moved to reserve':'Empty pitcher parked')
+ }
  brew:Cycle|null=null;blend:Cycle|null=null;teaReady=false;blendReady=false;teaStock=0;blendStock=0
- snap:(Cycle&{slot:number})|null=null
+ snap:(Cycle&{slot:number;uid:number})|null=null
  stock:Record<string,number>={};reserve:Record<string,number>={};drawer=false
  lidStock:Record<LidMaterial,number>;lidReserve:Record<LidMaterial,number>
  get lidCapacity(){return this.data.capacity.lids??5}
@@ -122,9 +180,10 @@ export class Bench{
   else this.stock[key]++
   this.cups[slot]=null;return this.log('Empty cup returned to rack')
  }
+ canFinishWith(c:Drink,add:Topping){const next=[...c.add,add];return Object.values(this.data.recipes).some(r=>this.matches(c,r)&&(!r.shot||c.poured)&&r.add.filter(a=>!isTopping(a)).sort().join()===c.add.filter(a=>!isTopping(a)).sort().join()&&next.every(a=>r.add.includes(a)))||this.data.orders.some(o=>o.toppings?.includes(add)&&this.matchesOrder({...c,add:next},o))}
  canAdd(slot:number,add:Add){
   const c=this.cups[slot]
-  return !!c&&!c.lid&&!this.pouringAt(slot)&&!this.pouringFrom(add)&&!c.add.includes(add)&&c.add.length<this.data.capacity.finishPortions
+  return !!c&&!c.lid&&(!isTopping(add)||this.canFinishWith(c,add))&&!this.pouringAt(slot)&&!this.pouringFrom(add)&&!c.add.includes(add)&&c.add.length<this.data.capacity.finishPortions
  }
  /** Read-only eligibility for a directed drag, including the existing one-pour queue. */
  canDropPour(cmd:DirectedPour){
@@ -133,13 +192,15 @@ export class Bench{
   if(active&&this.pending.has(cmd.slot))return false
   if(cmd.action==='pour')return active?!cup.shot&&!!this.pitcherBank(cmd.head)?.[cmd.lane]:this.canTransfer(cmd.slot,cmd.head,cmd.lane)
   const add=cmd.add,cap=this.data.capacity,need=cup.size==='Large'?cap.largePortions:1
-  if(active){if(cup.add.includes(add)||active.action===add||cup.add.length+(active.action!=='transfer'?1:0)>=cap.finishPortions)return false}
+  if(active){if(isTopping(add))return false;if(cup.add.includes(add)||active.action===add||cup.add.length+(active.action!=='transfer'?1:0)>=cap.finishPortions)return false}
   else if(!this.canAdd(cmd.slot,add))return false
   const stock=({milk:this.milk,foam:this.textures.airy,coldmilk:this.milkReserve,ice:this.ice,cold:this.blendStock,tea:this.teaStock,orange:this.orangeStock} as Partial<Record<Add,number>>)[add]
   if(stock!==undefined&&stock<need)return false
+  if(add==='ice'&&this.iceRefill)return false
+  if(add==='orange'&&this.orangeSource(need,cmd.pitcher)<0)return false
   // Queues intentionally accept stocked ingredients even while a source is busy,
   // as before; immediate pours also require the machine to be idle.
-  if(!active&&(add==='milk'&&this.steamJobs.silky||add==='foam'&&this.steamJobs.airy||add==='orange'&&this.citrus))return false
+  if(!active&&(add==='milk'&&this.steamJobs.silky||add==='foam'&&this.steamJobs.airy))return false
   return true
  }
  freePitcher(head:number){
@@ -155,17 +216,22 @@ export class Bench{
   if(!g||!o||g.state!=='waiting'||o.end!==this.end||this.kitchen||this.turn)return false
   if(kind==='food')return !!this.foodAt(slot)&&!g.gotFood&&this.foodAt(slot)!.food===o.food
   const c=this.cups[slot]
-  return !!c&&!g.gotDrink&&!this.pending.has(slot)&&!this.pouringAt(slot)&&this.recipe(c)===o.drink&&takeCup(c.cup)===(o.mode==='To go')&&c.size===o.size&&(o.mode!=='To go'||c.lid||(pack&&takeCup(c.cup)&&this.lidStock[c.cup as LidMaterial]>0))
+  return !!c&&!g.gotDrink&&!this.pending.has(slot)&&!this.pouringAt(slot)&&this.matchesOrder(c,o)&&takeCup(c.cup)===(o.mode==='To go')&&c.size===o.size&&(o.mode!=='To go'||c.lid||(pack&&takeCup(c.cup)&&this.lidStock[c.cup as LidMaterial]>0))
  }
  ticks(seconds:number){return Math.ceil(seconds*1000/this.data.tickMs)}
- cycle(id:Station):Cycle{return {start:this.tick,end:this.tick+this.ticks(this.data.stations[id])}}
+ cycle(id:Station):Cycle{return {start:this.tick,end:this.tick+this.ticks(this.data.stations[id]??this.data.stations.finish)}}
+ /** Arrival and return are outside the timed pour itself. */
+ travelPour(id:'water'|'refillMilk'):Cycle{const start=this.tick+this.ticks(.45),end=start+this.ticks(this.data.stations[id]);return {approachStart:this.tick,start,end,returnEnd:end+this.ticks(.35)}}
  log(msg:string){this.events.push(this.tick+' · '+msg);return msg}
  get delivery(){return this.deliveries.at(-1)??null}
  get done(){return this.served+this.expired===this.guests.length}
  get stars(){return this.tuning.starFractions.filter(f=>this.smiles>=Math.ceil(f*this.guests.length)).length}
  matches(c:Drink,r:Recipe){return (r.cup===c.cup||r.travelCup===c.cup)&&r.shot===c.shot}
+ matchesOrder(c:Drink,o:Order){const r=o.drink?this.data.recipes[o.drink]:null;return !!r&&this.matches(c,r)&&(!r.shot||c.poured)&&[...r.add,...(o.toppings??[])].sort().join()===c.add.slice().sort().join()}
  recipe(c:Drink|null){if(!c||(!c.poured&&!c.add.length))return undefined
-  return Object.entries(this.data.recipes).find(([,r])=>this.matches(c,r)&&r.add.slice().sort().join()===c.add.slice().sort().join())?.[0]
+  const exact=Object.entries(this.data.recipes).find(([,r])=>this.matches(c,r)&&(!r.shot||c.poured)&&r.add.slice().sort().join()===c.add.slice().sort().join())?.[0]
+  // Only recognize an extra topping combination when it is an actual order modifier.
+  return exact??this.data.orders.find(o=>o.toppings?.length&&this.matchesOrder(c,o))?.drink??undefined
  }
  label(c:Drink|null){if(!c)return 'Empty';const k=this.recipe(c);return k?this.data.recipes[k].name:this.data.cups[c.cup]}
  get view(){return this.kitchen?'Kitchen':this.end}
@@ -190,6 +256,7 @@ export class Bench{
  }
  private advanceHot(slots:HotSlot[],grace:number|undefined,station:HotBay){
   for(const slot of slots){
+   if(slot.pestoJob&&this.tick>=slot.pestoJob.end){slot.pestoJob=undefined;slot.pesto=true}
    if(slot.cook&&this.tick>=slot.cook.end){
     slot.state='ready';slot.since=this.tick;slot.cook=null
     slot.deadline=grace?this.tick+this.ticks(grace):null
@@ -203,7 +270,7 @@ export class Bench{
   const slots=station==='oven'?this.ovenSlots:this.pressSlots
   // Legacy whole-machine controls collect one item, or start the loaded oven batch.
   const next=index??(['ready','burnt','loaded','cooking'] as const)
-   .map(state=>slots.findIndex(slot=>slot.state===state)).find(i=>i>=0)
+   .map(state=>slots.findIndex(slot=>slot.state===state&&!slot.pestoJob)).find(i=>i>=0)
   if(next===undefined||!Number.isInteger(next)||!slots[next])return station==='oven'?'Load a cornetto first':'Load a panino first'
   const slot=slots[next]
   if(towelSlot!==undefined&&slot.state!=='ready')return 'Choose a finished item to collect'
@@ -211,6 +278,7 @@ export class Bench{
    case 'empty':return station==='oven'?'Load a cornetto first':'Load a panino first'
    case 'cooking':return station==='oven'?'Cornetti are baking':'Grilling'
    case 'loaded':{
+    if(slot.pestoJob)return 'Wait for pesto application to finish'
     const batch=station==='oven'&&index===undefined?slots.filter(s=>s.state==='loaded'):[slot]
     for(const s of batch){s.state='cooking';s.since=this.tick;s.cook=this.cycle(station)}
     if(station==='oven')this.loading=null
@@ -258,23 +326,14 @@ export class Bench{
   if(this.wash&&this.tick>=this.wash.end){this.wash=null;this.washed=true}
   if(this.started&&!this.done)this.age++
   if(this.turn&&this.tick>=this.turn.end){const to=this.turn.to;this.kitchen=to==='Kitchen';if(to!=='Kitchen')this.end=to;this.turn=null}
-  if(this.grind&&this.tick>=this.grind.end){this.grind=null;this.grinding=0;this.basket='dosed';this.basketMoved=this.tick;this.log(this.assistedService?'Fresh dose ready · tap grinder to tamp':'Fresh grounds ready · lift portafilter from grinder')}
+  if(this.iceRefill&&this.tick>=this.iceRefill.end){this.ice=this.data.capacity.ice;this.iceRefill=null;this.log('Ice well replenished')}
+  if(this.grind&&this.tick>=this.grind.end){this.grind=null;this.grinding=0;this.basket=this.assistedService?'dosedHeld':'dosed';this.basketMoved=this.tick;if(this.assistedService)this.basketCycle=this.cycle('handleTravel');this.log('Pre-tamped dose ready')}
   if(this.basketCycle&&this.tick>=this.basketCycle.end){
    const stage=this.basket;this.basketCycle=null;this.basketMoved=this.tick
-   if(this.assistedService&&stage==='released'){
-    this.basket='knocking';this.basketCycle=this.cycle('knock')
-   }
-   if(stage==='knocking'){
-    this.basket='clean';this.log('Spent puck dropped into knock box')
-    if(this.assistedService)this.basketCycle=this.cycle('handleTravel')
-   }
-   if(this.assistedService&&stage==='clean'){
-    this.basket='emptyHeld';this.log('Handle docked · tap grinder to start')
-   }
-   if(this.assistedService&&stage==='dosedHeld'){
-    this.basket='tamping';this.basketCycle=this.cycle('load')
-   }
-   if(stage==='tamping'){this.basket='tamped';this.log('Grounds tamped level · lock into espresso group')}
+   if(stage==='released'&&this.assistedService){this.basket='knocking';this.basketCycle=this.cycle('knock')}
+   if(stage==='knocking'){this.basket='clean';if(this.assistedService)this.basketCycle=this.cycle('handleTravel');this.log('Spent puck dropped into knock box')}
+   if(stage==='dosedHeld'&&this.assistedService&&!this.groups[this.serviceHead].dirty){this.basket='attached';this.log('Portafilter attached · click to lock')}
+
    if(stage==='locking'){this.basket='mounted';this.assistedService=false;this.pulls=this.data.capacity.basketDoses;this.log('Portafilter twisted right · group locked')}
   }
   for(const texture of ['silky','airy'] as const){
@@ -282,15 +341,23 @@ export class Bench{
    if(job&&this.tick>=job.end){this.textures[texture]+=job.amount;this.steamJobs[texture]=null}
   }
   if(this.fridgeDoor&&this.tick>=this.fridgeDoor.end)this.fridgeDoor=null
-  if(this.milkRefill&&this.tick>=this.milkRefill.end){this.milkTank+=this.milkRefill.amount;this.milkRefill=null}
+  if(this.milkRefill&&this.tick>=(this.milkRefill.returnEnd??this.milkRefill.end)){this.milkTank+=this.milkRefill.amount;this.milkRefill=null}
   this.foodFlights=this.foodFlights.filter(job=>job.end>this.tick)
+  for(const [pocket,job] of this.stagedShotMotion)if(job.end<=this.tick)this.stagedShotMotion.delete(pocket)
   if(this.hopperFill&&this.tick>=this.hopperFill.end)this.hopperFill=null
+  if(this.assistedService&&this.basket==='clean'&&!this.basketCycle&&!this.hopperFill){
+   const cap=this.data.capacity
+   if(this.beans<cap.basketDoses&&this.bags>0){const bag=this.bagCounts.findIndex(n=>n>0);if(bag>=0){this.bagCounts[bag]--;this.bags--;this.beans=cap.hopper;this.hopperFill=this.cycle('load');this.log('Auto-refilling beans')}}
+   else if(this.beans>=cap.basketDoses){this.grinding=cap.basketDoses;this.beans-=this.grinding;this.grind=this.cycle('grinder');this.basket='grinding';this.basketMoved=this.tick;this.log('Grinding fresh coffee')}
+  }
+  if(this.assistedService&&this.basket==='dosedHeld'&&!this.basketCycle&&!this.groups[this.serviceHead].dirty&&!this.groups[this.serviceHead].flush){this.basket='attached';this.log('Portafilter attached · click to lock')}
+
   if(this.ovenDoor&&this.tick>=this.ovenDoor.end)this.ovenDoor=null
   if(this.loading&&this.tick>=this.loading.end)this.loading=null
   this.outputFlights=this.foodOutputs.filter(job=>job.end>this.tick)
   this.advanceHot(this.ovenSlots,this.data.ovenGrace,'oven')
   this.advanceHot(this.pressSlots,this.data.pressGrace,'press')
-  if(this.citrus&&this.tick>=this.citrus.end){this.citrus=null;this.orangeStock=this.data.capacity.citrus}
+  if(this.citrus&&this.tick>=this.citrus.end){this.citrus=null;this.orangeDock=this.data.capacity.citrus}
   if(this.brew&&this.tick>=this.brew.end){this.brew=null;this.teaReady=true}
   if(this.blend&&this.tick>=this.blend.end){this.blend=null;this.blendReady=true}
   if(this.snap&&this.tick>=this.snap.end)this.snap=null
@@ -300,7 +367,7 @@ export class Bench{
    if(job&&this.tick>=job.end){group.pots[job.lane]=job.shot;group.extraction=null}
   }
   if(this.microwave&&this.tick>=this.microwave.end){this.microwave=null;this.microReady=true}
-  for(const job of this.pours.filter(p=>p.end<=this.tick)){
+  for(const job of this.pours.filter(p=>(p.returnEnd??p.end)<=this.tick)){
    const cup=this.cups[job.slot]!
    if(job.action==='transfer')cup.poured=true
    else cup.add.push(job.action)
@@ -321,16 +388,16 @@ export class Bench{
    this.pending.clear();this.drawer=false;this.turn={...this.cycle('turn'),to:c.view};return this.log('Turn to '+c.view)
   }
   const rear=['washLoad','washRun']
-  const common=['oven','load','sandwich','press','pesto','brownie','tea','blend','returnBrownie','food','compact','discard','trash','drawer','restock']
+  const common=['oven','load','sandwich','press','pesto','brownie','snack','tea','blend','returnBrownie','food','compact','discard','trash','drawer','restock']
   if(!common.includes(c.action)&&rear.includes(c.action)!==this.kitchen)return this.kitchen?'Return to the counter':'Use the Kitchen'
   switch(c.action){
+   case 'moveOrange':return this.moveOrange(c.from,c.to)
    case 'bankHot':return this.stageHot(c.station,c.slot,c.dragged)
+   case 'bankShots':return this.bankShots()
    case 'parkShot':{
-    const bank=this.groups[c.head]?.pots,shot=bank?.[c.lane]
-    if(!bank||!shot)return 'Pull a shot first'
-    if(this.shotReserve[c.pocket]!==null||this.pouringFrom('transfer',reserveHead,c.pocket))return 'Choose an empty shot pocket'
-    bank[c.lane]=null;this.shotReserve[c.pocket]=shot
-    this.stagedShotMotion.set(c.pocket,{...this.cycle('foodFlight'),head:c.head,lane:c.lane})
+    const shot=this.groups[c.head]?.pots[c.lane]
+    if(!shot||!this.canBankShot(c.head,c.lane))return 'Choose an available pulled shot'
+    if(!this.parkShot(c.head,c.lane,c.pocket))return 'Choose an empty shot pocket'
     return this.log(shot==='short'?'Short shot staged':'Standard shot staged')
    }
    case 'dropPour':{
@@ -342,14 +409,22 @@ export class Bench{
     if(cmd.action==='add'&&(cup.add.includes(cmd.add)||active.action===cmd.add))return 'That ingredient is already in this cup'
     if(cmd.action==='pour'&&(cup.shot||!this.pitcherBank(cmd.head)?.[cmd.lane]))return 'Choose a ready pitcher and a cup without espresso'
     if(cmd.action==='add'){
+     if(isTopping(cmd.add))return 'Finish the base drink before adding a topping'
      const need=cup.size==='Large'?cap.largePortions:1
      const stock=({milk:this.milk,foam:this.textures.airy,coldmilk:this.milkReserve,ice:this.ice,cold:this.blendStock,tea:this.teaStock,orange:this.orangeStock} as Partial<Record<Add,number>>)[cmd.add]
+     if(cmd.add==='orange'&&this.orangeSource(need,cmd.pitcher)<0)return 'Choose a juice pitcher with enough portions'
      if(stock!==undefined&&stock<need)return 'Prepare more '+this.data.finishes[cmd.add].toLowerCase()+' first'
      if(cup.add.length+(active.action!=='transfer'?1:0)>=cap.finishPortions)return 'This cup has no room for another ingredient'
     }
     this.pending.set(cmd.slot,{uid:cup.uid,command:cmd});return this.log('Next pour queued for cup '+(cmd.slot+1))
    }
 
+   case 'restockAll':{
+    let total=0
+    for(const k of Object.keys(this.reserve)){if(!k.startsWith('paper-')&&!k.startsWith('clear-'))continue;const n=Math.max(0,Math.min(cap.takeaway-this.stock[k],this.reserve[k]));this.stock[k]+=n;this.reserve[k]-=n;total+=n}
+    for(const k of ['paper','clear'] as const){const n=Math.max(0,Math.min(this.lidCapacity-this.lidStock[k],this.lidReserve[k]));this.lidStock[k]+=n;this.lidReserve[k]-=n;total+=n}
+    this.drawer=false;return total?this.log('Takeaway cups and lids replenished'):'No takeaway stock to replenish'
+   }
    case 'drawer':this.drawer=!this.drawer;return this.log(this.drawer?'Reserve open · choose a stack':'Reserve closed')
    case 'restockLid':{
     if(!this.drawer)return 'Open the reserve drawer'
@@ -400,60 +475,48 @@ export class Bench{
     this.bagCounts[bag]--;this.bags--;this.beans=cap.hopper;this.hopperFill=this.cycle('load');this.started=true;return this.log('House roast poured into hopper')
    }
    case 'serviceGroup':{
-    const group=this.groups[c.head]
-    if(!group)return 'Unknown group'
-    if(this.basket==='tamped'&&c.head===this.serviceHead)return this.command({action:'lock'})
-    if(this.basket!=='mounted')return 'Finish servicing group '+(this.serviceHead+1)+' first'
-    if(group.pulls||group.extraction)return 'Finish the current basket first'
-    this.serviceHead=c.head;this.assistedService=true;this.basket='released'
-    this.basketMoved=this.tick;this.basketCycle=this.cycle('handleTravel')
-    group.dirty=true;group.flush=this.cycle('purge')
-    return this.log('Group '+(c.head+1)+' rinsing · knocking out spent puck')
+    if(c.head===this.serviceHead&&this.basket==='attached')return this.command({action:'lock'})
+    const group=this.groups[c.head];if(!group||this.basket!=='mounted'||group.extraction||group.pulls)return 'Finish the current basket first'
+    this.serviceHead=c.head;this.assistedService=true;this.basket='released';this.basketMoved=this.tick;this.basketCycle=this.cycle('handleTravel');group.dirty=true;group.flush=this.cycle('purge');this.started=true
+    return this.log('Automatic portafilter service · purging group '+(c.head+1))
    }
-   case 'grinderLever':
-    if(this.assistedService&&this.basket==='dosed'){
-     this.basket='dosedHeld';this.basketMoved=this.tick;this.basketCycle=this.cycle('handleTravel')
-     return this.log('Fresh grounds moving to the tamp mat')
-    }
-    return this.command({action:'grind'})
-   case 'releaseKnock':
-    return this.command({action:'release'})
-   case 'release':
-    {const h=c.head??0,group=this.groups[h];if(!group||this.basket!=='mounted'||group.extraction||group.pulls)return 'Finish the current basket first';this.serviceHead=h;group.dirty=true}
-    this.basket='released';this.basketMoved=this.tick;return this.log('Handle released · knock out puck')
+   case 'grinderLever':return this.command({action:'grind'})
+   case 'releaseKnock':return this.command({action:'release'})
+   case 'release':{
+    const h=c.head??0,group=this.groups[h];if(!group||this.basket!=='mounted'||group.extraction||group.pulls)return 'Finish the current basket first'
+    this.serviceHead=h;group.dirty=true;group.flush=null;this.assistedService=false
+    this.basket='released';this.basketMoved=this.tick;return this.log('Drag spent portafilter to knock box')
+   }
    case 'purge':{
     const h=c.head??this.serviceHead,group=this.groups[h]
     if(!group||this.serviceHead!==h||this.basket==='mounted'||!group.dirty||group.flush)return 'Purge the exposed group after removing its spent handle'
     group.flush=this.cycle('purge');return this.log('Purging group '+(h+1))
    }
    case 'pick':
-    if(this.assistedService)return 'Handle follows the service track'
+    if(this.assistedService)return 'Automatic service in progress'
     if(this.basket==='released'){this.basket='held';this.basketMoved=this.tick;return this.log('Spent portafilter picked up · tap the knock box')}
     if(this.basket==='clean'){this.basket='emptyHeld';this.basketMoved=this.tick;return this.log('Empty portafilter picked up · insert into grinder')}
     return 'Pick up the handle from the counter first'
    case 'knock':
+    if(this.assistedService)return 'Automatic service in progress'
     if(this.basket!=='held')return 'Pick up the spent portafilter before using the knock box'
-    this.basket='knocking';this.basketCycle={start:this.tick,end:this.tick+this.ticks(this.data.stations.knock)};this.basketMoved=this.tick;return this.log('Knocking spent puck into the box')
+    this.basket='knocking';this.basketCycle=this.cycle('knock');this.basketMoved=this.tick;return this.log('Knocking spent puck into the box')
    case 'dose':
-    if(this.assistedService)return this.command({action:'grinderLever'})
-    if(this.basket!=='dosed')return this.basket==='grinding'?'Grinding · wait for the ready indicator':'Grind into the empty portafilter first'
-    this.basket='dosedHeld';this.basketMoved=this.tick;return this.log('Filled portafilter lifted · bring it to the tamping mat')
-   case 'placeTamp':
-    if(this.assistedService)return 'Tamping automatically'
-    if(this.basket!=='dosedHeld')return 'Lift the filled portafilter from the grinder first'
-    this.basket='atTamp';this.basketMoved=this.tick;return this.log('Full basket resting on black tamp mat · tap the tamper')
-   case 'moveToTamp':
-    if(this.assistedService)return this.command({action:'grinderLever'})
-    if(this.basket!=='dosed')return 'Wait until the fresh dose is ready'
-    this.basket='atTamp';this.basketMoved=this.tick;return this.log('Full basket moved to tamp mat · press with the metal tamper')
-   case 'tamp':
-    if(this.basket!=='atTamp')return 'Place the filled basket on the tamping mat first'
-    this.basket='tamping';this.basketCycle=this.cycle('load');this.basketMoved=this.tick;return this.log('Tamping ground coffee')
+    if(this.assistedService)return 'Automatic service in progress'
+    if(this.basket!=='dosed')return 'Wait for the pre-tamped dose'
+    this.basket='dosedHeld';this.basketMoved=this.tick;return this.log('Pre-tamped portafilter ready to attach')
+   case 'placeTamp':case 'moveToTamp':case 'tamp':return 'Tamping retired · grinder dispenses pre-tamped grounds'
+   case 'attach':
+    if(this.assistedService)return 'Automatic service in progress'
+    if(c.head!==this.serviceHead||!['dosed','dosedHeld'].includes(this.basket))return 'Choose the exposed group and a loaded portafilter'
+    if(this.groups[c.head].dirty||this.groups[c.head].flush)return 'Purge the exposed group before attaching the handle'
+    this.basket='attached';this.basketMoved=this.tick;return this.log('Portafilter attached · click to lock')
    case 'lock':
-    if(this.basket!=='tamped')return 'Tamp the fresh grounds before locking the group'
-    if(this.groups[this.serviceHead].dirty)return 'Purge the exposed group before locking the handle'
-    this.basket='locking';this.basketCycle=this.cycle(this.assistedService?'handleLock':'load');this.basketMoved=this.tick;return this.log('Insert handle from left · rotate right to lock')
+    if(this.basket!=='attached')return 'Attach the pre-tamped portafilter first'
+    if(this.groups[this.serviceHead].dirty||this.groups[this.serviceHead].flush)return 'Purge the exposed group before locking the handle'
+    this.basket='locking';this.basketCycle=this.cycle('handleLock');this.basketMoved=this.tick;return this.log('Rotate right to lock')
    case 'grind':{
+    if(this.assistedService)return 'Automatic service in progress'
     if(this.basket!=='emptyHeld')return this.basket==='grinding'?'Grinding fresh coffee':'Pick up the empty portafilter and insert it in the grinder first'
     if(this.hopperFill)return 'Filling hopper'
     if(this.grind)return 'Grinding in progress'
@@ -462,11 +525,10 @@ export class Bench{
     this.grinding=cap.basketDoses;this.beans-=this.grinding;this.grind=this.cycle('grinder');this.basket='grinding';this.basketMoved=this.tick;break
    }
    case 'refillMilk':{
-    this.fridgeDoor=this.cycle('fridgeDoor')
     if(this.milkRefill)return 'Milk is refilling'
     const amount=Math.min(cap.milkTank-this.milkTank,cap.carton,this.milkReserve)
     if(!amount)return this.milkTank===cap.milkTank?'Tank is full':'Fridge is empty'
-    this.milkReserve-=amount;this.milkRefill={...this.cycle('refillMilk'),amount};this.started=true;return this.log('Refilling milk tank')
+    this.milkReserve-=amount;this.milkRefill={...this.travelPour('refillMilk'),amount};this.fridgeDoor={start:this.tick,end:this.milkRefill.returnEnd!};this.started=true;return this.log('Refilling milk tank')
    }
    case 'steam':{
     const texture=c.texture??'silky'
@@ -482,17 +544,18 @@ export class Bench{
    case 'oven':
    case 'press':return this.operateHot(c.action,c.slot,c.towelSlot,c.dragged)
    case 'brownie':if(!this.collect('brownie'))return 'Both towel spaces are occupied';break
+   case 'snack':if(!(['brownie','madeleine','cookie','chips'] as const).includes(c.food)||!this.collect(c.food))return 'Both towel spaces are occupied';break
    case 'pesto':{
-    const i=c.slot??this.pressSlots.findIndex(slot=>slot.state==='loaded'&&!slot.pesto)
+    const i=c.slot??this.pressSlots.findIndex(slot=>slot.state==='loaded'&&!slot.pesto&&!slot.pestoJob)
     const slot=this.pressSlots[i]
     if(!Number.isInteger(i)||slot?.state!=='loaded')return 'Load a panino before adding pesto'
-    if(slot.pesto)return 'Pesto already added to this panino'
-    slot.pesto=true;slot.pestoAt=this.tick;return this.log('Basil pesto spread on panino '+(i+1))
+    if(slot.pesto||slot.pestoJob)return 'Pesto already added or applying to this panino'
+    slot.pestoAt=this.tick;slot.pestoJob=this.cycle('pesto');this.started=true;return this.log('Applying basil pesto to panino '+(i+1))
    }
    case 'citrus':
     if(this.citrus)return 'The citrus press is running'
-    if(this.orangeStock===cap.citrus)return 'The juice carafe is full'
-    if(this.pouringFrom('orange'))return 'Return the juice carafe to the press first'
+    if(this.orangeDock===null)return 'Dock an empty pitcher first'
+    if(this.orangeDock!==0)return 'Move the filled pitcher into the reserve first'
     this.citrus=this.cycle('citrus');break
    case 'tea':
     if(this.brew)return 'Tea is steeping'
@@ -505,8 +568,9 @@ export class Bench{
     if(this.blendReady){this.blendStock=cap.blend;this.blendReady=false;return this.log('Frappé base collected')}
     this.blend=this.cycle('blend');break
    case 'refillIce':
+    if(this.iceRefill)return 'Ice refill already running'
     if(this.ice===cap.ice)return 'Ice well is full'
-    this.ice=cap.ice;return this.log('Ice well replenished')
+    this.iceRefill=this.cycle('refillIce');this.started=true;return this.log('Refilling ice well')
    case 'heat':
     if(this.microwave)return 'Cornetto warming'
     if(this.microReady){if(!this.collect('baked'))return 'Clear a food space';this.microReady=false;return this.log('Warm cornetto collected')}
@@ -543,7 +607,7 @@ export class Bench{
     const material=cup.cup as LidMaterial
     if(c.material!==undefined&&c.material!==material)return 'Choose the matching lid'
     if(!this.lidStock[material])return 'Lid stack empty · open reserve drawer'
-    this.lidStock[material]--;cup.lid=true;this.snap={...this.cycle('lid'),slot:this.selected};break
+    this.lidStock[material]--;cup.lid=true;this.snap={...this.cycle('lid'),slot:this.selected,uid:cup.uid};break
    }
    case 'food':if(!this.foodAt(c.slot))return 'Empty towel space';this.source='food';this.foodIndex=c.slot;return this.log('Food selected')
    case 'select':
@@ -551,26 +615,28 @@ export class Bench{
     this.selected=c.slot;this.source='cup';return this.log(this.cups[c.slot]?this.label(this.cups[c.slot])+' selected':'Empty saucer selected')
    case 'serve':
     if(!this.canServe(c.guest,c.kind,c.slot,true))return 'The dragged item does not match that ticket'
-    if(c.kind==='cup'){const cup=this.cups[c.slot]!;if(takeCup(cup.cup)&&!cup.lid){this.lidStock[cup.cup as LidMaterial]--;cup.lid=true}}
+    if(c.kind==='cup'){const cup=this.cups[c.slot]!;if(takeCup(cup.cup)&&!cup.lid){this.lidStock[cup.cup as LidMaterial]--;cup.lid=true;this.snap={...this.cycle('lid'),slot:c.slot,uid:cup.uid}}}
     this.source=c.kind; if(c.kind==='cup')this.selected=c.slot;else this.foodIndex=c.slot
     return this.command({action:'guest',guest:c.guest})
    case 'add':{
     const slot=c.slot??this.selected,cup=this.cups[slot]
     if(!cup||(c.slot===undefined&&this.source!=='cup'))return 'Select an open cup'
+    if(isTopping(c.add)&&!this.canFinishWith(cup,c.add))return 'Finish the base drink before adding a topping'
     if(!this.canAdd(slot,c.add))return 'Choose an open cup with room for this ingredient'
     const portions=cup.size==='Large'?cap.largePortions:1
-    if(c.add==='ice'){if(this.ice<portions)return 'Refill the ice well';this.ice-=portions}
+    if(c.add==='ice'){if(this.iceRefill)return 'Ice refill running';if(this.ice<portions)return 'Refill the ice well';this.ice-=portions}
     if(c.add==='milk'||c.add==='foam'){
      const texture=c.add==='milk'?'silky':'airy'
      if(this.steamJobs[texture])return 'Wait for this pitcher to finish steaming'
      if(this.textures[texture]<portions)return 'Steam more '+texture+' milk first'
      this.textures[texture]-=portions
     }
-    if(c.add==='coldmilk'){if(this.milkReserve<portions)return 'No cold milk left in the fridge';this.milkReserve-=portions;this.fridgeDoor=this.cycle('fridgeDoor')}
-    if(c.add==='orange'){if(this.citrus||this.orangeStock<portions)return 'Press a fresh batch of orange juice';this.orangeStock-=portions}
+    if(c.add==='coldmilk'){if(this.milkReserve<portions)return 'No cold milk left in the fridge';this.milkReserve-=portions;const door=this.cycle('coldmilk');if(!this.fridgeDoor||this.fridgeDoor.end<door.end)this.fridgeDoor=door}
+    const pitcher=c.add==='orange'?this.orangeSource(portions,c.pitcher):undefined
+    if(pitcher!==undefined){if(pitcher<0)return 'Move a filled juice pitcher into the reserve';this.orangeReserve[pitcher]=this.orangeReserve[pitcher]!-portions}
     if(c.add==='tea'){if(this.teaStock<portions)return 'Collect a fresh tea carafe';this.teaStock-=portions}
     if(c.add==='cold'){if(this.blendStock<portions)return 'Collect a fresh blender batch';this.blendStock-=portions}
-    this.source='cup';this.selected=slot;this.pours.push({...this.cycle('finish'),action:c.add,slot});break
+    this.source='cup';this.selected=slot;this.pours.push({...(c.add==='water'?this.travelPour('water'):this.cycle(ingredientStation(c.add))),action:c.add,slot,lane:pitcher});break
    }
    case 'discard':{
     const kind=this.source==='food'&&this.foodAt(this.foodIndex)?'food':this.cups[this.selected]?'drink':'shot'
@@ -586,7 +652,7 @@ export class Bench{
      g.gotFood=true;this.deliveries.push({...this.cycle('service'),guest:c.guest,slot:this.foodIndex,drink:null,food:f});this.takeFood(this.foodIndex)
     }else{
      const cup=this.cups[this.selected]
-     if(!cup||this.pending.has(this.selected)||this.pouringAt(this.selected)||g.gotDrink||this.recipe(cup)!==o.drink)return 'Check the drink on this ticket'
+     if(!cup||this.pending.has(this.selected)||this.pouringAt(this.selected)||g.gotDrink||!this.matchesOrder(cup,o))return 'Check the drink on this ticket'
      if(takeCup(cup.cup)!==takeaway||cup.size!==o.size)return 'Check the service style and size'
      if(takeaway&&!cup.lid)return 'Snap on a lid first'
      if(!takeCup(cup.cup))this.returns.push({cup:cup.cup,at:this.tick+this.ticks(this.data.stations.dishReturn)})
@@ -609,7 +675,7 @@ export class Bench{
    }
   }
   this.started=true
-  const messages={citrus:'Pressing fresh oranges',pull:'Extracting into pitcher',steam:'Steaming milk',grind:'Grinding',load:'Loaded cornetto',oven:'Baking',cup:'Empty cup staged',pour:'Pouring into selected cup',add:'Finishing drink',lid:'Lid snapped on',brownie:'Brownie collected',sandwich:'Panino loaded',pesto:'Pesto added',press:'Grilling',tea:'Steeping tea',blend:'Blending chilled base'}
+  const messages={citrus:'Pressing fresh oranges',pull:'Extracting into pitcher',steam:'Steaming milk',grind:'Grinding',load:'Loaded cornetto',oven:'Baking',cup:'Empty cup staged',pour:'Pouring into selected cup',add:'Finishing drink',lid:'Lid snapped on',brownie:'Brownie collected',snack:'Snack collected',sandwich:'Panino loaded',pesto:'Pesto added',press:'Grilling',tea:'Steeping tea',blend:'Blending chilled base'}
   return this.log(messages[c.action])
  }
 }

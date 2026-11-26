@@ -2,14 +2,14 @@
   "seed": 611,
   "tickMs": 50,
   "stations": {
-    "grinder": 5,
+    "grinder": 4,
     "knock": 1,
     "handleTravel": 0.55,
     "handleLock": 0.7,
-    "steamer": 3.3,
-    "oven": 5,
-    "short": 1.5,
-    "standard": 2.25,
+    "steamer": 10,
+    "oven": 20,
+    "short": 10,
+    "standard": 10,
     "transfer": 0.95,
     "finish": 0.85,
     "load": 0.42,
@@ -17,19 +17,24 @@
     "turn": 0.5,
     "entrance": 2.7,
     "departure": 2.4,
-    "press": 4.5,
-    "tea": 4,
-    "blend": 3.1,
+    "press": 15,
+    "tea": 10,
+    "blend": 10,
     "lid": 0.28,
-    "compact": 1.45,
-    "wash": 4.5,
+    "compact": 20,
+    "wash": 15,
     "dishReturn": 3,
-    "microwave": 2.7,
+    "microwave": 10,
     "purge": 1.15,
     "foodFlight": 0.4,
-    "refillMilk": 1.2,
+    "refillMilk": 6,
     "fridgeDoor": 1.8,
-    "citrus": 3.8
+    "citrus": 10,
+    "water": 6,
+    "pesto": 3,
+    "syrup": 1.5,
+    "coldmilk": 0.85,
+    "refillIce": 10
   },
   "capacity": {
     "hopper": 6,
@@ -49,7 +54,7 @@
     "lids": 5,
     "reserve": 5,
     "wash": 4,
-    "basketDoses": 6,
+    "basketDoses": 3,
     "beanBags": 6,
     "heads": 3,
     "pitchers": 2,
@@ -65,8 +70,8 @@
     "demi": "Demitasse",
     "mug": "Blue mug",
     "glass": "Latte glass",
-    "bowl": "Cappuccino bowl",
-    "tall": "Frapp\u00e9 glass",
+    "bowl": "Cappuccino cup",
+    "tall": "Frappé glass",
     "paper": "Paper cup",
     "clear": "Clear cup"
   },
@@ -83,7 +88,11 @@
     "caramel": "Salted caramel",
     "vanilla": "Vanilla syrup",
     "cherry": "Amarena cherry",
-    "orange": "Fresh orange juice"
+    "orange": "Fresh orange juice",
+    "strawberryDrizzle": "Strawberry drizzle",
+    "caramelDrizzle": "Caramel drizzle",
+    "cinnamonDust": "Cinnamon dust",
+    "cocoaDust": "Cocoa dust"
   },
   "recipes": {
     "ristretto": {
@@ -134,7 +143,7 @@
       "travelCup": "paper"
     },
     "frappe": {
-      "name": "Coffee frapp\u00e9",
+      "name": "Coffee frappé",
       "cup": "tall",
       "shot": "standard",
       "add": [
@@ -197,7 +206,7 @@
       "travelCup": "paper"
     },
     "mocha": {
-      "name": "Caff\u00e8 mocha",
+      "name": "Caffè mocha",
       "cup": "glass",
       "shot": "standard",
       "add": [
@@ -266,7 +275,7 @@
       "travelCup": "paper"
     },
     "caramelfrappe": {
-      "name": "Salted caramel frapp\u00e9",
+      "name": "Salted caramel frappé",
       "cup": "tall",
       "shot": "standard",
       "add": [
@@ -288,7 +297,7 @@
       "travelCup": "paper"
     },
     "vanillafrappe": {
-      "name": "Vanilla coffee frapp\u00e9",
+      "name": "Vanilla coffee frappé",
       "cup": "tall",
       "shot": "standard",
       "add": [
@@ -323,7 +332,7 @@
       "travelCup": "clear"
     },
     "spremuta": {
-      "name": "Spremuta d\u2019arancia",
+      "name": "Spremuta d’arancia",
       "cup": "tall",
       "shot": null,
       "add": [
@@ -331,6 +340,65 @@
       ],
       "price": 15,
       "travelCup": "clear"
+    },
+    "caramelmocha": {
+      "name": "Caramel mocha",
+      "cup": "mug",
+      "travelCup": "paper",
+      "shot": "standard",
+      "add": [
+        "milk",
+        "cocoa",
+        "caramel"
+      ],
+      "price": 26
+    },
+    "cherrytea": {
+      "name": "Amarena iced tea",
+      "cup": "tall",
+      "travelCup": "clear",
+      "shot": null,
+      "add": [
+        "tea",
+        "ice",
+        "cherry"
+      ],
+      "price": 22
+    },
+    "matchafrappe": {
+      "name": "Matcha frappé",
+      "cup": "tall",
+      "travelCup": "clear",
+      "shot": null,
+      "add": [
+        "cold",
+        "matcha"
+      ],
+      "price": 25
+    },
+    "strawberrymatcha": {
+      "name": "Strawberry Matcha Latte",
+      "cup": "bowl",
+      "travelCup": "paper",
+      "shot": null,
+      "add": [
+        "matcha",
+        "milk",
+        "strawberryDrizzle"
+      ],
+      "price": 24
+    },
+    "cinnamoncaramel": {
+      "name": "Cinnamon Caramel Latte",
+      "cup": "glass",
+      "travelCup": "paper",
+      "shot": "standard",
+      "add": [
+        "milk",
+        "caramel",
+        "cinnamonDust"
+      ],
+      "price": 26
     }
   },
   "orders": [
@@ -448,6 +516,18 @@
     "brownie": {
       "name": "Brownie",
       "price": 8
+    },
+    "madeleine": {
+      "name": "Madeleines",
+      "price": 8
+    },
+    "cookie": {
+      "name": "Cookie",
+      "price": 7
+    },
+    "chips": {
+      "name": "Potato chips",
+      "price": 6
     }
   }
 }

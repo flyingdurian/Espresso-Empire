@@ -18,12 +18,13 @@ export function canDrop(g:Bench,item:Carry,dest:string):boolean{
  const food=item.kind==='food'?g.foodAt(item.slot):null
  switch(item.kind){
   case 'supply':return type===item.station&&slotMatches(item.station,s=>s.state==='empty')
-  case 'pesto':return type==='press'&&slotMatches('press',s=>s.state==='loaded'&&!s.pesto)
+  case 'pesto':return type==='press'&&slotMatches('press',s=>s.state==='loaded'&&!s.pesto&&!s.pestoJob)
   case 'bakedSlot':return type==='towel'&&i!==undefined&&g.towel[i]===null&&slots(item.station)[item.slot]?.state==='ready'
   case 'pot':{
    if(g.kitchen||!potReady(item.head,item.lane))return false
    if(type==='saucer'&&i!==undefined)return g.canDropPour({action:'pour',head:item.head,lane:item.lane,slot:i})
    if(type==='shotPocket'&&item.head!==reserveHead){
+    if(!g.canBankShot(item.head,item.lane))return false
     const free=(p:number)=>g.shotReserve[p]===null&&!g.pouringFrom('transfer',reserveHead,p)
     return i===undefined?g.shotReserve.some((_,p)=>free(p)):free(i)
    }
@@ -33,23 +34,25 @@ export function canDrop(g:Bench,item:Carry,dest:string):boolean{
    const h=holders[item.index]
    return !g.kitchen&&type==='saucer'&&i!==undefined&&g.cups[i]===null&&!!h&&g.stock[stockKey(h.cup,h.size)]>0&&!(g.drawer&&takeCup(h.cup))
   }
-  case 'add':return !g.kitchen&&type==='saucer'&&i!==undefined&&g.canDropPour({action:'add',add:item.add,slot:i})
+  case 'juicePitcher':return type==='juiceDock'?g.canMoveOrange(item.from,-1):type==='juiceSeat'&&i!==undefined&&g.canMoveOrange(item.from,i)
+  case 'add':return !g.kitchen&&type==='saucer'&&i!==undefined&&g.canDropPour({action:'add',add:item.add,slot:i,pitcher:item.pitcher})
   case 'cup':{
    if(g.kitchen||!cup)return false
    if(type==='guest'&&i!==undefined)return g.canServe(i,'cup',item.slot,true)
+   if(type==='waterSpout'&&i===undefined)return g.canDropPour({action:'add',add:'water',slot:item.slot})
    if(type==='bin'&&i===undefined)return !g.compacting&&g.binLoad<g.data.capacity.bin&&!g.pouringAt(item.slot)
    if(type==='holder'&&i!==undefined){const h=holders[i];return !!h&&cup.cup===h.cup&&cup.size===h.size&&!cup.shot&&!cup.add.length&&!cup.lid&&!g.pouringAt(item.slot)}
    return false
   }
   case 'food':return !!food&&(type==='guest'&&i!==undefined?g.canServe(i,'food',item.slot,true):type==='bin'&&i===undefined?!g.compacting&&g.binLoad<g.data.capacity.bin:type==='brownie'&&i===undefined?g.towel[item.slot]?.food==='brownie':false)
   case 'beans':return !g.kitchen&&type==='grinder'&&i===undefined&&!g.hopperFill&&!g.grind&&!g.beans&&g.bags>0&&g.bagCounts[item.bag]>0
-  case 'tamper':return !g.kitchen&&type==='mat'&&i===undefined&&g.basket==='atTamp'
+  case 'tamper':return false
   case 'handle':{
    if(g.kitchen||g.assistedService)return false
+   if(g.basket==='mounted')return type==='knock'&&i===undefined&&item.head!==undefined&&!!g.groups[item.head]&&!g.groups[item.head].pulls&&!g.groups[item.head].extraction
    if(type==='knock'&&i===undefined)return g.basket==='released'||g.basket==='held'
    if(type==='grinder'&&i===undefined)return (g.basket==='clean'||g.basket==='emptyHeld')&&!g.hopperFill&&!g.grind&&g.beans>=g.data.capacity.basketDoses
-   if(type==='mat'&&i===undefined)return g.basket==='dosed'||g.basket==='dosedHeld'
-   return type==='head'&&i===g.serviceHead&&g.basket==='tamped'&&!g.groups[g.serviceHead].dirty
+   return type==='head'&&i===g.serviceHead&&['dosed','dosedHeld'].includes(g.basket)&&!g.groups[g.serviceHead].dirty&&!g.groups[g.serviceHead].flush
   }
  }
 }

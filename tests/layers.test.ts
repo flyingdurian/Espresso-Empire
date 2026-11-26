@@ -1,3 +1,4 @@
+import {carafeTouch} from '../src/counter/galley-layout.ts'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFileSync} from 'node:fs'
@@ -9,7 +10,7 @@ import {holderTouch} from '../src/counter/cup-rack.ts'
 import {cupColumns,stackFrames} from '../src/counter/cup-stack-spec.ts'
 import {citrusTouch,frontSupplyTouch,milkTouch,syrupTouch,applianceTouch,type TouchBox} from '../src/counter/touch-layout.ts'
 import {frontHot,frontPressPoint} from '../src/counter/hot-appliance.ts'
-import {iceSeats,scoopWithIce,icePortions} from '../src/counter/ice-service.ts'
+import {iceSeats,scoopWithIce,icePortions,iceTouch} from '../src/counter/ice-service.ts'
 import {canDrop} from '../src/counter/drop-eligibility.ts'
 const data=<T>(name:string)=>JSON.parse(readFileSync(new URL('../public/data/'+name+'.json',import.meta.url),'utf8')) as T
 const game=()=>new Bench(data<Config>('counter'),data<Tuning>('tuning'))
@@ -44,19 +45,19 @@ test('state previews are detached snapshots and preserve live inventory, timing,
 test('five dine-in stack positions share one baseline with independent targets and preserved vessel identities',()=>{
  const china=holders.slice(0,5),g=game(),targets=china.map(b=>holderTouch(b))
  assert.equal(new Set(china.map(b=>b.y)).size,1)
- assert.deepEqual(china.map(b=>b.cup),['demi','mug','glass','bowl','tall'])
+ assert.deepEqual(china.map(b=>b.cup),['bowl','demi','mug','glass','tall'])
  for(const [i,b] of china.entries()){const stack=stackFrames(cupColumns[i],g.stock[b.cup],5);assert.equal(stack.length,5);assert.equal(stack[0].y+stack[0].h,b.y);assert.ok(stack.every((p,i)=>i===0||p.y<stack[i-1].y))}
  for(let i=0;i<targets.length;i++){assert.ok(bounds(targets[i]));for(let j=i+1;j<targets.length;j++)assert.equal(overlap(targets[i],targets[j]),false)}
  for(const b of china){g.command({action:'cup',cup:b.cup,size:b.size,slot:0});assert.equal(g.stock[b.cup],4);g.command({action:'returnCup',cup:b.cup,size:b.size,slot:0});assert.equal(g.stock[b.cup],5)}
 })
-test('mini rack retains exactly two supply actions; press projection and foreground citrus clear neighboring targets',()=>{
- assert.equal(miniRack.length,4);assert.equal(miniRack.filter(p=>p.food===null).length,2)
- assert.deepEqual(miniRack.flatMap(p=>p.food?[p.food]:[]),['raw','panino'])
+test('mini rack contains six distinct supplies; press projection and foreground citrus clear neighboring targets',()=>{
+ assert.equal(miniRack.length,6);assert.equal(new Set(miniRack.map(p=>p.food)).size,6)
+ assert.deepEqual(miniRack.flatMap(p=>p.food?[p.food]:[]),['madeleine','cookie','chips','raw','brownie','panino'])
  const supply=[frontSupplyTouch('raw'),frontSupplyTouch('panino')]
  for(const p of supply){assert.ok(bounds(p));assert.equal(overlap(p,fridge),false)}
  assert.equal(overlap(...supply as [TouchBox,TouchBox]),false)
  const citrus=citrusTouch(),cold={x:finishSources.coldmilk.x,y:finishSources.coldmilk.y-finishSources.coldmilk.h/2,w:58,h:finishSources.coldmilk.h}
- const other=[cold,{x:1348,y:673,w:245,h:69},{x:1497,y:803,w:85,h:66},{x:1595,y:803,w:85,h:66},...syrupKeys.map(syrupTouch)]
+ const other=[cold,iceTouch,carafeTouch('tea'),carafeTouch('cold'),...syrupKeys.map(syrupTouch)]
  assert.ok(citrusPress.y>700);assert.equal(overlap(citrus.run,citrus.juice),false)
  for(const b of Object.values(citrus)){assert.ok(bounds(b));for(const p of other)assert.equal(overlap(b,p),false)}
  const b=frontHot.press,centerY=b.y+b.h/2
@@ -79,6 +80,6 @@ test('six ice units remove visible layers monotonically; large pours debit two, 
  g.command({action:'cup',cup:'clear',size:'Large',slot:0});g.command({action:'add',add:'ice',slot:0});tick();assert.equal(g.ice,4)
  g.command({action:'add',add:'ice',slot:0});assert.equal(g.ice,4)
  g.command({action:'cup',cup:'glass',size:'Medium',slot:1});g.command({action:'add',add:'ice',slot:1});tick();assert.equal(g.ice,3)
- g.command({action:'refillIce'});assert.equal(g.ice,6)
+ g.command({action:'refillIce'});assert.equal(g.ice,3);for(let i=0;i<g.ticks(10);i++)g.step();assert.equal(g.ice,6)
  const low=game();low.ice=1;low.command({action:'cup',cup:'clear',size:'Large',slot:0});assert.equal(canDrop(low,{kind:'add',add:'ice'},'saucer/0'),false);low.command({action:'add',add:'ice',slot:0});assert.equal(low.ice,1)
 })

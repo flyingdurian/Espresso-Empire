@@ -1,8 +1,13 @@
 // The same measured scoop follows a pickup, a free drag and the final pour.
 type Point={x:number;y:number}
-export const iceScoopHome={x:1407,y:709,angle:0,h:51}
+export const iceInfillRect={x:1198,y:625,w:314,h:110}
+export const iceOriginalRim={x:1210,y:635,w:290,h:90}
+export const iceWidthScale=.725
+export const iceRim={...iceOriginalRim,x:iceOriginalRim.x+iceOriginalRim.w*(1-iceWidthScale)/2,w:iceOriginalRim.w*iceWidthScale}
+const seatX=(x:number)=>iceRim.x+(x-iceOriginalRim.x)*iceWidthScale
+export const iceScoopHome={x:seatX(1407),y:709,angle:0,h:47}
 const home=iceScoopHome
-export const iceRim={x:1210,y:635,w:290,h:90}
+export const iceTouch={x:iceRim.x+iceRim.w/2,y:673,w:iceRim.w*.85,h:69}
 export const iceAssets=['empire_ice_brass_rim','empire_ice_front_lip','empire_ice_scoop',...([1,2,3,4].map(n=>'empire_ice_cube_'+n))]
 export const iceAssetPath=(id:string)=>'/empire_ice/'+id+'.webp'
 const clamp=(x:number)=>Math.max(0,Math.min(1,x))
@@ -42,7 +47,7 @@ export function iceSeats(stock:number,capacity:number){
   for(let row=0;row<l.rows;row++)for(let col=0;col<l.cols;col++){
    const i=row*l.cols+col,u=(row+.65)/(l.rows+.3),v=(col+.65)/(l.cols+.3),j=Math.sin((base+i+1)*13.37)
    const start=1233+40*u+level*7,span=198+15*u-level*14
-   seats.push({key:'empire_ice_cube_'+(1+(base+i)%4),x:start+span*v+j*3,y:678+30*u-l.lift-Math.cos(i*5+level)*2,h:l.size+u*4+j*2,angle:j*.50,rank:base+i,priority:level*3+Math.abs(v-.53)*1.8+Math.abs(u-.55)*.60+j*.035})
+   seats.push({key:'empire_ice_cube_'+(1+(base+i)%4),x:seatX(start+span*v+j*3),y:678+30*u-l.lift-Math.cos(i*5+level)*2,h:(l.size+u*4+j*2)*.90,angle:j*.50,rank:base+i,priority:level*3+Math.abs(v-.53)*1.8+Math.abs(u-.55)*.60+j*.035})
   }
   base+=count
  }
