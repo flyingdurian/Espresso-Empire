@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f8f6ed"><title>Tower Café · Simulation studio</title><link rel="icon" href="data:,"></head>
+<body>
+<header><div class="brand"><span class="logo" aria-hidden="true">♨</span><b>Tower Café</b></div><span class="build">Development build <i>/</i> M0</span></header>
+<main><div class="heading"><div><p class="eyebrow"><span class="rule"></span> VIA BIANCA &nbsp; / &nbsp; ROMA</p><h1>Simulation studio</h1></div><div class="seedbox"><label for="seed">RNG SEED</label><input id="seed" type="number" min="0" max="4294967295" step="1" aria-label="RNG seed"><button id="reset" title="Restart fixture with this seed">Restart</button></div></div>
+<p id="loading" role="status">Loading the diagnostic fixture…</p>
+<div id="studio" hidden>
+<div class="workspace">
+<section class="panel elevation"><div class="panelhead"><div><span class="sectionmark"></span><h2>Building section</h2></div><div class="switch"><button id="elev" aria-pressed="true">Elevation</button><button id="frame" aria-pressed="false">Framing</button></div></div>
+<div id="drawing" role="img" aria-label="Tower section drawing showing two customer floors, production equipment and current position"></div>
+<div id="framing" hidden><div class="frameoptions" aria-label="Preview aspect ratio"><button aria-pressed="true" id="ratio43">4:3</button><button aria-pressed="false" id="ratio169">16:9</button></div><div class="design-canvas"><div class="safe"><span>HUD</span><b>1920 × 1080 safe area</b><em>Cart</em><small>Rail</small></div></div></div>
+<div class="mapfooter"><span><i class="dot"></i> Cart position <strong id="position"></strong></span><label>Inspect <select id="inspect" aria-label="Inspect floor"></select></label></div></section>
+<section class="panel inspector"><div class="panelhead"><div><span class="sectionmark"></span><h2>Inspector</h2></div><span class="meta" id="active"></span></div>
+<div class="tabs" role="group" aria-label="Inspector view"><button class="tab" data-tab="orders" aria-pressed="true">Orders</button><button class="tab" data-tab="stations" aria-pressed="false">Stations</button><button class="tab" data-tab="cart" aria-pressed="false">Cart</button></div>
+<div id="details"></div></section>
+</div>
+<section class="transport panel"><div class="controls"><button id="play" class="primary">▶ &nbsp;Run fixture</button><button id="step">Step +1</button></div><div class="time"><div><b id="status">Paused</b><span id="timecode"></span></div><progress id="progress" aria-label="Fixture timeline"></progress></div><div class="tick"><span>TICK</span><strong id="tick"></strong></div></section>
+<div class="low"><details class="panel"><summary>Event log <span id="eventcount"></span></summary><ol id="events"></ol></details><details class="panel"><summary>Replay verification</summary><div class="replay"><p>Compare the browser replay with the headless checkpoint for the reference seed.</p><button id="verify">Verify replay</button><output id="verified" aria-live="polite"></output></div></details></div>
+<p class="foot">M0 diagnostic fixture · Position changes and timers are scripted for inspection.</p></div></main><script type="module" src="/src/main.ts"></script></body></html>

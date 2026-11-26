@@ -1,0 +1,49 @@
+{
+  "sections": [
+    {
+      "id": "F2",
+      "name": "Terrace",
+      "kind": "service",
+      "seats": [
+        "T1",
+        "T2",
+        "T3",
+        "T4"
+      ],
+      "floorId": "F2"
+    },
+    {
+      "id": "F1",
+      "name": "Lounge",
+      "kind": "service",
+      "seats": [
+        "L1",
+        "L2",
+        "L3",
+        "L4"
+      ],
+      "floorId": "F1"
+    },
+    {
+      "id": "B1",
+      "name": "Back Bar",
+      "kind": "production",
+      "seats": [],
+      "floorId": "B1"
+    }
+  ],
+  "edges": [
+    {
+      "from": "B1",
+      "to": "F1",
+      "mode": "lift",
+      "seconds": 1
+    },
+    {
+      "from": "F1",
+      "to": "F2",
+      "mode": "lift",
+      "seconds": 1
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"version":1,"tickMs":100,"staggerSeconds":[1,2.5],"neighborSeconds":[3,5],"patienceSeconds":[35,20],"zoneBoundaries":[0.15,0.5],"tipFractions":[0,0.5,1],"comboSeconds":2.5,"comboBonuses":[0,20,50,100],"smilesByZone":[0,0,1],"starFractions":[0.4,0.65,0.85],"orderLimit":5,"cartDecay":false}

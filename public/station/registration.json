@@ -1,0 +1,245 @@
+{
+  "canvas": [
+    1672,
+    941
+  ],
+  "window": [
+    528,
+    127,
+    578,
+    417
+  ],
+  "assets": {
+    "plate": {
+      "x": 0,
+      "y": 0,
+      "w": 1672,
+      "h": 941,
+      "file": "plate.webp"
+    },
+    "espresso": {
+      "x": 19,
+      "y": 410,
+      "w": 487,
+      "h": 236,
+      "file": "espresso-piazza.webp"
+    },
+    "grinder": {
+      "file": "grinder.webp",
+      "x": 200,
+      "y": 233,
+      "w": 111,
+      "h": 191
+    },
+    "bean-fill": {
+      "file": "bean-fill.webp",
+      "x": 208,
+      "y": 266,
+      "w": 95,
+      "h": 53
+    },
+    "handle-0": {
+      "file": "handle-0.webp",
+      "x": 118,
+      "y": 512,
+      "w": 31,
+      "h": 51
+    },
+    "handle-1": {
+      "file": "handle-1.webp",
+      "x": 249,
+      "y": 512,
+      "w": 31,
+      "h": 51
+    },
+    "handle-2": {
+      "file": "handle-2.webp",
+      "x": 379,
+      "y": 512,
+      "w": 31,
+      "h": 51
+    },
+    "steam": {
+      "x": 1130,
+      "y": 251,
+      "w": 115,
+      "h": 145,
+      "file": "lattiera-ivory.webp"
+    },
+    "steam-tray": {
+      "file": "steam-tray.webp",
+      "x": 1147,
+      "y": 371,
+      "w": 98,
+      "h": 16
+    },
+    "oven": {
+      "file": "oven.webp",
+      "x": 1264,
+      "y": 171,
+      "w": 145,
+      "h": 220
+    },
+    "microwave": {
+      "file": "microwave.webp",
+      "x": 1137,
+      "y": 440,
+      "w": 109,
+      "h": 126
+    },
+    "oven-open": {
+      "file": "oven-open.webp",
+      "x": 1264,
+      "y": 171,
+      "w": 173,
+      "h": 230
+    },
+    "microwave-open": {
+      "file": "microwave-open.webp",
+      "x": 1112,
+      "y": 440,
+      "w": 134,
+      "h": 126
+    },
+    "press-open": {
+      "x": 1260,
+      "y": 428,
+      "w": 149,
+      "h": 173,
+      "file": "press-open.webp"
+    },
+    "press-closed": {
+      "x": 1260,
+      "y": 428,
+      "w": 149,
+      "h": 173,
+      "file": "press-closed.webp"
+    },
+    "milk-pitcher": {
+      "file": "milk-pitcher.webp",
+      "x": 1185,
+      "y": 322,
+      "w": 52,
+      "h": 53
+    },
+    "tamper": {
+      "file": "tamper.webp",
+      "x": 302,
+      "y": 646,
+      "w": 45,
+      "h": 52
+    },
+    "bag": {
+      "file": "bag.webp",
+      "x": 52,
+      "y": 106,
+      "w": 64,
+      "h": 90
+    },
+    "ice-full": {
+      "file": "ice-full.webp",
+      "x": 1254,
+      "y": 650,
+      "w": 185,
+      "h": 58
+    },
+    "ice-low": {
+      "file": "ice-low.webp",
+      "x": 1254,
+      "y": 650,
+      "w": 185,
+      "h": 58
+    },
+    "fridge": {
+      "x": 1459,
+      "y": 231,
+      "w": 200,
+      "h": 152,
+      "file": "fridge.webp"
+    },
+    "pastry-bin": {
+      "x": 1461,
+      "y": 198,
+      "w": 104,
+      "h": 69,
+      "file": "pastry-bin.webp"
+    },
+    "panini-bin": {
+      "x": 1552,
+      "y": 177,
+      "w": 106,
+      "h": 69,
+      "file": "panini-bin.webp"
+    },
+    "fridge-open": {
+      "x": 1446,
+      "y": 236,
+      "w": 211,
+      "h": 145,
+      "file": "fridge-open.webp"
+    },
+    "milk-carton": {
+      "x": 1496,
+      "y": 281,
+      "w": 13,
+      "h": 22,
+      "file": "milk-carton.webp"
+    },
+    "pastry-bin-lip": {
+      "x": 1461,
+      "y": 198,
+      "w": 104,
+      "h": 69,
+      "file": "pastry-bin-lip.webp"
+    },
+    "panini-bin-lip": {
+      "x": 1552,
+      "y": 177,
+      "w": 106,
+      "h": 69,
+      "file": "panini-bin-lip.webp"
+    },
+    "bean-shelf": {
+      "x": 8,
+      "y": 151,
+      "w": 504,
+      "h": 76,
+      "file": "bean-shelf-patch.webp"
+    },
+    "bean-rail": {
+      "x": 15,
+      "y": 153,
+      "w": 489,
+      "h": 10,
+      "file": "bean-shelf-rail.webp"
+    },
+    "service-bin": {
+      "x": 404,
+      "y": 748,
+      "w": 142,
+      "h": 193,
+      "file": "service-bin.webp"
+    },
+    "fridge-door-1": {
+      "x": 1472,
+      "y": 248,
+      "w": 152,
+      "h": 111,
+      "file": "fridge-door-1.webp"
+    },
+    "fridge-door-2": {
+      "x": 1472,
+      "y": 249,
+      "w": 97,
+      "h": 110,
+      "file": "fridge-door-2.webp"
+    },
+    "fridge-door-3": {
+      "x": 1472,
+      "y": 255,
+      "w": 22,
+      "h": 113,
+      "file": "fridge-door-3.webp"
+    }
+  }
+}

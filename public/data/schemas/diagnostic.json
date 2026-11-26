@@ -1,0 +1,132 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "defaultSeed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "startSection": {
+      "type": "string",
+      "minLength": 1
+    },
+    "durationTicks": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "checkpointTick": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "cupSlots": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "plateSlots": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "loadedCups": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "population": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "orderPool": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "orders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "seat": {
+            "type": "string",
+            "minLength": 1
+          },
+          "archetype": {
+            "type": "string",
+            "minLength": 1
+          },
+          "remainingSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "item": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "seat",
+          "archetype",
+          "remainingSeconds",
+          "item"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tick": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "kind": {
+            "enum": [
+              "cycle",
+              "position"
+            ]
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "tick",
+          "kind",
+          "target"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "id",
+    "defaultSeed",
+    "startSection",
+    "durationTicks",
+    "checkpointTick",
+    "cupSlots",
+    "plateSlots",
+    "loadedCups",
+    "population",
+    "orderPool",
+    "orders",
+    "commands"
+  ],
+  "additionalProperties": false
+}

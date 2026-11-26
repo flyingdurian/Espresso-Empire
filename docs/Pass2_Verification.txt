@@ -1,0 +1,1574 @@
+Via Bianca Pass 2 — verification record (2026-11-25 PST)
+
+v22.16.0
+10.9.2
+Version 5.8.3
+
+Offline dependency install: npm ci --offline --no-audit --no-fund (exit 1)
+npm error code ENOTCACHED
+npm error request to https://registry.npmjs.org/vite/-/vite-6.3.5.tgz failed: cache mode is 'only-if-cached' but no cached response is available.
+npm error A complete log of this run can be found in: /home/oai/.npm/_logs/2026-11-26T02_24_53_793Z-debug-0.log
+
+Focused suites: node --experimental-strip-types --test tests/touch-layout.test.ts tests/p2-controls.test.ts (exit 0)
+TAP version 13
+# (node:3676) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: shot buttons and portafilter grips are mutually exclusive in desktop and compact layouts
+ok 1 - shot buttons and portafilter grips are mutually exclusive in desktop and compact layouts
+  ---
+  duration_ms: 2.318406
+  type: 'test'
+  ...
+# Subtest: all reserve pocket and well retrieval rectangles have neutral internal gaps and retain capacities
+ok 2 - all reserve pocket and well retrieval rectangles have neutral internal gaps and retain capacities
+  ---
+  duration_ms: 1.916562
+  type: 'test'
+  ...
+# Subtest: explicit shot selection never falls through to a different pocket; only generic rack chooses first-free
+ok 3 - explicit shot selection never falls through to a different pocket; only generic rack chooses first-free
+  ---
+  duration_ms: 0.456686
+  type: 'test'
+  ...
+# Subtest: front and rear appliance slots and generic bezels have no shared ownership
+ok 4 - front and rear appliance slots and generic bezels have no shared ownership
+  ---
+  duration_ms: 1.954288
+  type: 'test'
+  ...
+# Subtest: supply targets are separated from all appliance slots and bezels, and front fridge
+ok 5 - supply targets are separated from all appliance slots and bezels, and front fridge
+  ---
+  duration_ms: 0.636297
+  type: 'test'
+  ...
+# Subtest: counter travel rejects non-carry controls, nested control origins, disabled buttons, and secondary starts
+ok 6 - counter travel rejects non-carry controls, nested control origins, disabled buttons, and secondary starts
+  ---
+  duration_ms: 0.972172
+  type: 'test'
+  ...
+# Subtest: neutral counter swipe still commits; secondary leave and cancel do not steal its pointer
+ok 7 - neutral counter swipe still commits; secondary leave and cancel do not steal its pointer
+  ---
+  duration_ms: 1.280396
+  type: 'test'
+  ...
+# Subtest: owned counter cancellation and lost capture settle without committing a turn
+ok 8 - owned counter cancellation and lost capture settle without committing a turn
+  ---
+  duration_ms: 0.182264
+  type: 'test'
+  ...
+# Subtest: item and header cancellation only invoke teardown for the owning pointer
+ok 9 - item and header cancellation only invoke teardown for the owning pointer
+  ---
+  duration_ms: 1.078242
+  type: 'test'
+  ...
+# (node:3678) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: exact destination owns the release; incompatible, disabled, and carry-only controls block snapping
+ok 10 - exact destination owns the release; incompatible, disabled, and carry-only controls block snapping
+  ---
+  duration_ms: 1.269969
+  type: 'test'
+  ...
+# Subtest: neutral snap filters unusable and invisible targets, and mouse radius zero never snaps
+ok 11 - neutral snap filters unusable and invisible targets, and mouse radius zero never snaps
+  ---
+  duration_ms: 0.852452
+  type: 'test'
+  ...
+# Subtest: equal and subpixel ties cancel independent of enumeration order; duplicate guest targets are one destination
+ok 12 - equal and subpixel ties cancel independent of enumeration order; duplicate guest targets are one destination
+  ---
+  duration_ms: 0.169084
+  type: 'test'
+  ...
+# Subtest: bin is direct-hit only, including when it is the nearest valid target
+ok 13 - bin is direct-hit only, including when it is the nearest valid target
+  ---
+  duration_ms: 0.175444
+  type: 'test'
+  ...
+# Subtest: milk steam, pitcher and pour controls have exclusive lane and vertical ownership
+ok 14 - milk steam, pitcher and pour controls have exclusive lane and vertical ownership
+  ---
+  duration_ms: 0.650188
+  type: 'test'
+  ...
+# Subtest: all five syrup targets have improved spacing and remain inside the stage
+ok 15 - all five syrup targets have improved spacing and remain inside the stage
+  ---
+  duration_ms: 0.21277
+  type: 'test'
+  ...
+# Subtest: shot rack, its eight pockets, food wells and occupied towels never intersect either saucer for any vessel
+ok 16 - shot rack, its eight pockets, food wells and occupied towels never intersect either saucer for any vessel
+  ---
+  duration_ms: 2.721052
+  type: 'test'
+  ...
+# Subtest: pour eligibility respects stock, lids, duplicate ingredients and an existing directed-pour queue
+ok 17 - pour eligibility respects stock, lids, duplicate ingredients and an existing directed-pour queue
+  ---
+  duration_ms: 3.089796
+  type: 'test'
+  ...
+# Subtest: shot staging respects exact occupied pockets and reserve capacity; reserve shots cannot be re-staged
+ok 18 - shot staging respects exact occupied pockets and reserve capacity; reserve shots cannot be re-staged
+  ---
+  duration_ms: 1.044842
+  type: 'test'
+  ...
+# Subtest: cups, food, appliances and bin only highlight usable destinations
+ok 19 - cups, food, appliances and bin only highlight usable destinations
+  ---
+  duration_ms: 1.187335
+  type: 'test'
+  ...
+# Subtest: guest destination revalidates the actual ready drink, pending pour and guest state
+ok 20 - guest destination revalidates the actual ready drink, pending pour and guest state
+  ---
+  duration_ms: 1.171001
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 304.991408
+
+Counter and focused suites strict standalone TypeScript check (exit 0)
+tsc --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --resolveJsonModule --allowImportingTsExtensions --skipLibCheck --lib ES2022,DOM,DOM.Iterable --typeRoots /opt/nvm/versions/node/v22.16.0/lib/node_modules/ts-node/node_modules/@types src/counter/main.ts tests/touch-layout.test.ts tests/p2-controls.test.ts
+
+Standard npm test (exit 1; 11 import failures from missing Ajv)
+
+> tower-cafe@0.1.0 test
+> node --experimental-strip-types --test tests/*.test.ts
+
+TAP version 13
+# (node:3744) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/bar-service-cycle.test.ts
+not ok 1 - tests/bar-service-cycle.test.ts
+  ---
+  duration_ms: 332.262823
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/bar-service-cycle.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3745) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/citrus-press.test.ts
+not ok 2 - tests/citrus-press.test.ts
+  ---
+  duration_ms: 340.532002
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/citrus-press.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3751) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/counter-ambience.test.ts
+not ok 3 - tests/counter-ambience.test.ts
+  ---
+  duration_ms: 347.162318
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/counter-ambience.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3777) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/counter-payments.test.ts
+not ok 4 - tests/counter-payments.test.ts
+  ---
+  duration_ms: 186.989822
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/counter-payments.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3783) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/counter.test.ts
+not ok 5 - tests/counter.test.ts
+  ---
+  duration_ms: 192.345342
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/counter.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3790) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/cup-rack.test.ts
+not ok 6 - tests/cup-rack.test.ts
+  ---
+  duration_ms: 173.022099
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/cup-rack.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3810) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/guest-performance.test.ts
+not ok 7 - tests/guest-performance.test.ts
+  ---
+  duration_ms: 171.766225
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/guest-performance.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3811) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: each customer walks forward through the queue and turns toward the exit after the handoff
+ok 8 - each customer walks forward through the queue and turns toward the exit after the handoff
+  ---
+  duration_ms: 15.392566
+  type: 'test'
+  ...
+# (node:3818) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: scoop starts empty, digs at the well, and follows the hand once filled
+ok 9 - scoop starts empty, digs at the well, and follows the hand once filled
+  ---
+  duration_ms: 5.094821
+  type: 'test'
+  ...
+# Subtest: each stock change reveals more of the well while remaining cubes stay seated
+ok 10 - each stock change reveals more of the well while remaining cubes stay seated
+  ---
+  duration_ms: 0.690038
+  type: 'test'
+  ...
+# (node:3843) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/m0.test.ts
+not ok 10 - tests/m0.test.ts
+  ---
+  duration_ms: 130.527867
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/m0.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3849) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: both steam lanes render the full active cycle using their packaged, decoded art
+ok 12 - both steam lanes render the full active cycle using their packaged, decoded art
+  ---
+  duration_ms: 6.131761
+  type: 'test'
+  ...
+# (node:3856) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: shot buttons and portafilter grips are mutually exclusive in desktop and compact layouts
+ok 13 - shot buttons and portafilter grips are mutually exclusive in desktop and compact layouts
+  ---
+  duration_ms: 1.668619
+  type: 'test'
+  ...
+# Subtest: all reserve pocket and well retrieval rectangles have neutral internal gaps and retain capacities
+ok 14 - all reserve pocket and well retrieval rectangles have neutral internal gaps and retain capacities
+  ---
+  duration_ms: 1.371532
+  type: 'test'
+  ...
+# Subtest: explicit shot selection never falls through to a different pocket; only generic rack chooses first-free
+ok 15 - explicit shot selection never falls through to a different pocket; only generic rack chooses first-free
+  ---
+  duration_ms: 0.285299
+  type: 'test'
+  ...
+# Subtest: front and rear appliance slots and generic bezels have no shared ownership
+ok 16 - front and rear appliance slots and generic bezels have no shared ownership
+  ---
+  duration_ms: 1.237952
+  type: 'test'
+  ...
+# Subtest: supply targets are separated from all appliance slots and bezels, and front fridge
+ok 17 - supply targets are separated from all appliance slots and bezels, and front fridge
+  ---
+  duration_ms: 0.609507
+  type: 'test'
+  ...
+# Subtest: counter travel rejects non-carry controls, nested control origins, disabled buttons, and secondary starts
+ok 18 - counter travel rejects non-carry controls, nested control origins, disabled buttons, and secondary starts
+  ---
+  duration_ms: 0.75119
+  type: 'test'
+  ...
+# Subtest: neutral counter swipe still commits; secondary leave and cancel do not steal its pointer
+ok 19 - neutral counter swipe still commits; secondary leave and cancel do not steal its pointer
+  ---
+  duration_ms: 0.860253
+  type: 'test'
+  ...
+# Subtest: owned counter cancellation and lost capture settle without committing a turn
+ok 20 - owned counter cancellation and lost capture settle without committing a turn
+  ---
+  duration_ms: 0.178058
+  type: 'test'
+  ...
+# Subtest: item and header cancellation only invoke teardown for the owning pointer
+ok 21 - item and header cancellation only invoke teardown for the owning pointer
+  ---
+  duration_ms: 0.495885
+  type: 'test'
+  ...
+# (node:3876) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/service-art.test.ts
+not ok 13 - tests/service-art.test.ts
+  ---
+  duration_ms: 306.966013
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/service-art.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3882) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/service-pass.test.ts
+not ok 14 - tests/service-pass.test.ts
+  ---
+  duration_ms: 283.383311
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/service-pass.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3898) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# node:internal/modules/package_json_reader:256
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'ajv' imported from /mnt/data/via_bianca_p2/src/content/load.ts
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+#     at packageResolve (node:internal/modules/esm/resolve:768:81)
+#     at moduleResolve (node:internal/modules/esm/resolve:854:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:984:11)
+#     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+#     at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+#     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+#     at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v22.16.0
+# Subtest: tests/service.test.ts
+not ok 15 - tests/service.test.ts
+  ---
+  duration_ms: 157.755545
+  type: 'test'
+  location: '/mnt/data/via_bianca_p2/tests/service.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# (node:3909) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: exact destination owns the release; incompatible, disabled, and carry-only controls block snapping
+ok 25 - exact destination owns the release; incompatible, disabled, and carry-only controls block snapping
+  ---
+  duration_ms: 1.003089
+  type: 'test'
+  ...
+# Subtest: neutral snap filters unusable and invisible targets, and mouse radius zero never snaps
+ok 26 - neutral snap filters unusable and invisible targets, and mouse radius zero never snaps
+  ---
+  duration_ms: 0.681775
+  type: 'test'
+  ...
+# Subtest: equal and subpixel ties cancel independent of enumeration order; duplicate guest targets are one destination
+ok 27 - equal and subpixel ties cancel independent of enumeration order; duplicate guest targets are one destination
+  ---
+  duration_ms: 0.14649
+  type: 'test'
+  ...
+# Subtest: bin is direct-hit only, including when it is the nearest valid target
+ok 28 - bin is direct-hit only, including when it is the nearest valid target
+  ---
+  duration_ms: 0.164998
+  type: 'test'
+  ...
+# Subtest: milk steam, pitcher and pour controls have exclusive lane and vertical ownership
+ok 29 - milk steam, pitcher and pour controls have exclusive lane and vertical ownership
+  ---
+  duration_ms: 0.657348
+  type: 'test'
+  ...
+# Subtest: all five syrup targets have improved spacing and remain inside the stage
+ok 30 - all five syrup targets have improved spacing and remain inside the stage
+  ---
+  duration_ms: 0.205619
+  type: 'test'
+  ...
+# Subtest: shot rack, its eight pockets, food wells and occupied towels never intersect either saucer for any vessel
+ok 31 - shot rack, its eight pockets, food wells and occupied towels never intersect either saucer for any vessel
+  ---
+  duration_ms: 2.478067
+  type: 'test'
+  ...
+# Subtest: pour eligibility respects stock, lids, duplicate ingredients and an existing directed-pour queue
+ok 32 - pour eligibility respects stock, lids, duplicate ingredients and an existing directed-pour queue
+  ---
+  duration_ms: 2.432638
+  type: 'test'
+  ...
+# Subtest: shot staging respects exact occupied pockets and reserve capacity; reserve shots cannot be re-staged
+ok 33 - shot staging respects exact occupied pockets and reserve capacity; reserve shots cannot be re-staged
+  ---
+  duration_ms: 0.828616
+  type: 'test'
+  ...
+# Subtest: cups, food, appliances and bin only highlight usable destinations
+ok 34 - cups, food, appliances and bin only highlight usable destinations
+  ---
+  duration_ms: 0.779462
+  type: 'test'
+  ...
+# Subtest: guest destination revalidates the actual ready drink, pending pour and guest state
+ok 35 - guest destination revalidates the actual ready drink, pending pour and guest state
+  ---
+  duration_ms: 0.733192
+  type: 'test'
+  ...
+1..35
+# tests 35
+# suites 0
+# pass 24
+# fail 11
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1220.000261
+
+Standard npm run build (exit 2)
+
+> tower-cafe@0.1.0 build
+> tsc --noEmit && vite build
+
+scripts/checkpoint.ts(1,25): error TS2307: Cannot find module 'node:fs/promises' or its corresponding type declarations.
+scripts/headless.ts(4,19): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+scripts/headless.ts(5,19): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+scripts/read.ts(1,24): error TS2307: Cannot find module 'node:fs/promises' or its corresponding type declarations.
+src/content/load.ts(1,17): error TS2307: Cannot find module 'ajv' or its corresponding type declarations.
+src/content/load.ts(10,73): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/view/painted-surface.ts(1,55): error TS2307: Cannot find module 'pixi.js' or its corresponding type declarations.
+src/view/scene.ts(9,53): error TS2307: Cannot find module 'pixi.js' or its corresponding type declarations.
+tests/bar-service-cycle.test.ts(1,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/bar-service-cycle.test.ts(2,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/citrus-press.test.ts(1,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/citrus-press.test.ts(2,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/counter-ambience.test.ts(1,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/counter-ambience.test.ts(2,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/counter-ambience.test.ts(25,30): error TS2304: Cannot find name 'setImmediate'.
+tests/counter-payments.test.ts(1,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/counter-payments.test.ts(2,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/counter.test.ts(1,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/counter.test.ts(2,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/cup-rack.test.ts(1,32): error TS2307: Cannot find module 'node:assert' or its corresponding type declarations.
+tests/cup-rack.test.ts(2,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/guest-performance.test.ts(1,32): error TS2307: Cannot find module 'node:assert' or its corresponding type declarations.
+tests/guest-performance.test.ts(2,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/guest-walk.test.ts(1,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/guest-walk.test.ts(2,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/ice-service.test.ts(1,32): error TS2307: Cannot find module 'node:assert' or its corresponding type declarations.
+tests/ice-service.test.ts(2,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/m0.test.ts(1,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/m0.test.ts(2,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/milk-station.test.ts(1,32): error TS2307: Cannot find module 'node:assert' or its corresponding type declarations.
+tests/milk-station.test.ts(2,24): error TS2307: Cannot find module 'node:fs/promises' or its corresponding type declarations.
+tests/milk-station.test.ts(3,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/p2-controls.test.ts(1,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/p2-controls.test.ts(2,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/p2-controls.test.ts(3,28): error TS2307: Cannot find module 'node:fs' or its corresponding type declarations.
+tests/service-art.test.ts(1,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/service-art.test.ts(2,31): error TS2307: Cannot find module 'node:fs/promises' or its corresponding type declarations.
+tests/service-art.test.ts(3,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/service-pass.test.ts(1,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/service-pass.test.ts(2,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/service.test.ts(1,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/service.test.ts(2,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/touch-layout.test.ts(1,18): error TS2307: Cannot find module 'node:test' or its corresponding type declarations.
+tests/touch-layout.test.ts(2,20): error TS2307: Cannot find module 'node:assert/strict' or its corresponding type declarations.
+tests/touch-layout.test.ts(3,28): error TS2307: Cannot find module 'node:fs' or its corresponding type declarations.
+
+Supplementary regression: disposable copy of src/scripts/tests/public/package.json ONLY; deferred eager loadContent import in scripts/read.ts to async loadDisk; omitted m0.test.ts. No packaged file edited for this workaround.
+node --experimental-strip-types --test $(find tests -name '*.test.ts' ! -name 'm0.test.ts' | sort)
+Exit 0
+TAP version 13
+# (node:3977) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a spent group auto-knocks, rinses and docks; grinder and final lock wait for the barista
+ok 1 - a spent group auto-knocks, rinses and docks; grinder and final lock wait for the barista
+  ---
+  duration_ms: 43.089336
+  type: 'test'
+  ...
+# (node:3978) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Syrup rack has five distinct targets with clear gaps for touch
+ok 2 - Syrup rack has five distinct targets with clear gaps for touch
+  ---
+  duration_ms: 0.858891
+  type: 'test'
+  ...
+# Subtest: Citrus press runs independently, rejects duplicate starts, and charges two portions for a large glass
+ok 3 - Citrus press runs independently, rejects duplicate starts, and charges two portions for a large glass
+  ---
+  duration_ms: 30.017991
+  type: 'test'
+  ...
+# (node:3979) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: two waiting guests create no repeating crowd or legacy guest audio
+ok 4 - two waiting guests create no repeating crowd or legacy guest audio
+  ---
+  duration_ms: 142.773279
+  type: 'test'
+  ...
+# (node:4010) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a completed meal pays its price once and remaining patience sets the tip
+ok 5 - a completed meal pays its price once and remaining patience sets the tip
+  ---
+  duration_ms: 8.991411
+  type: 'test'
+  ...
+# (node:4016) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: ristretto in dine-in vessel
+ok 6 - ristretto in dine-in vessel
+  ---
+  duration_ms: 3.415125
+  type: 'test'
+  ...
+# Subtest: ristretto in takeaway vessel
+ok 7 - ristretto in takeaway vessel
+  ---
+  duration_ms: 0.54534
+  type: 'test'
+  ...
+# Subtest: espresso in dine-in vessel
+ok 8 - espresso in dine-in vessel
+  ---
+  duration_ms: 0.79783
+  type: 'test'
+  ...
+# Subtest: espresso in takeaway vessel
+ok 9 - espresso in takeaway vessel
+  ---
+  duration_ms: 0.457018
+  type: 'test'
+  ...
+# Subtest: americano in dine-in vessel
+ok 10 - americano in dine-in vessel
+  ---
+  duration_ms: 0.625761
+  type: 'test'
+  ...
+# Subtest: americano in takeaway vessel
+ok 11 - americano in takeaway vessel
+  ---
+  duration_ms: 0.510668
+  type: 'test'
+  ...
+# Subtest: latte in dine-in vessel
+ok 12 - latte in dine-in vessel
+  ---
+  duration_ms: 1.854178
+  type: 'test'
+  ...
+# Subtest: latte in takeaway vessel
+ok 13 - latte in takeaway vessel
+  ---
+  duration_ms: 0.496567
+  type: 'test'
+  ...
+# Subtest: cappuccino in dine-in vessel
+ok 14 - cappuccino in dine-in vessel
+  ---
+  duration_ms: 1.417862
+  type: 'test'
+  ...
+# Subtest: cappuccino in takeaway vessel
+ok 15 - cappuccino in takeaway vessel
+  ---
+  duration_ms: 0.942768
+  type: 'test'
+  ...
+# Subtest: frappe in dine-in vessel
+ok 16 - frappe in dine-in vessel
+  ---
+  duration_ms: 1.208467
+  type: 'test'
+  ...
+# Subtest: frappe in takeaway vessel
+ok 17 - frappe in takeaway vessel
+  ---
+  duration_ms: 0.430748
+  type: 'test'
+  ...
+# Subtest: iced in dine-in vessel
+ok 18 - iced in dine-in vessel
+  ---
+  duration_ms: 0.515686
+  type: 'test'
+  ...
+# Subtest: iced in takeaway vessel
+ok 19 - iced in takeaway vessel
+  ---
+  duration_ms: 0.303918
+  type: 'test'
+  ...
+# Subtest: tea in dine-in vessel
+ok 20 - tea in dine-in vessel
+  ---
+  duration_ms: 0.430797
+  type: 'test'
+  ...
+# Subtest: tea in takeaway vessel
+ok 21 - tea in takeaway vessel
+  ---
+  duration_ms: 0.378479
+  type: 'test'
+  ...
+# Subtest: macchiato in dine-in vessel
+ok 22 - macchiato in dine-in vessel
+  ---
+  duration_ms: 0.695666
+  type: 'test'
+  ...
+# Subtest: macchiato in takeaway vessel
+ok 23 - macchiato in takeaway vessel
+  ---
+  duration_ms: 0.368865
+  type: 'test'
+  ...
+# Subtest: flatwhite in dine-in vessel
+ok 24 - flatwhite in dine-in vessel
+  ---
+  duration_ms: 0.294734
+  type: 'test'
+  ...
+# Subtest: flatwhite in takeaway vessel
+ok 25 - flatwhite in takeaway vessel
+  ---
+  duration_ms: 4.998597
+  type: 'test'
+  ...
+# Subtest: hotcocoa in dine-in vessel
+ok 26 - hotcocoa in dine-in vessel
+  ---
+  duration_ms: 0.261222
+  type: 'test'
+  ...
+# Subtest: hotcocoa in takeaway vessel
+ok 27 - hotcocoa in takeaway vessel
+  ---
+  duration_ms: 0.241083
+  type: 'test'
+  ...
+# Subtest: mocha in dine-in vessel
+ok 28 - mocha in dine-in vessel
+  ---
+  duration_ms: 0.815426
+  type: 'test'
+  ...
+# Subtest: mocha in takeaway vessel
+ok 29 - mocha in takeaway vessel
+  ---
+  duration_ms: 0.382746
+  type: 'test'
+  ...
+# Subtest: icedmocha in dine-in vessel
+ok 30 - icedmocha in dine-in vessel
+  ---
+  duration_ms: 0.343677
+  type: 'test'
+  ...
+# Subtest: icedmocha in takeaway vessel
+ok 31 - icedmocha in takeaway vessel
+  ---
+  duration_ms: 0.334873
+  type: 'test'
+  ...
+# Subtest: matchalatte in dine-in vessel
+ok 32 - matchalatte in dine-in vessel
+  ---
+  duration_ms: 0.271929
+  type: 'test'
+  ...
+# Subtest: matchalatte in takeaway vessel
+ok 33 - matchalatte in takeaway vessel
+  ---
+  duration_ms: 0.265789
+  type: 'test'
+  ...
+# Subtest: icedmatcha in dine-in vessel
+ok 34 - icedmatcha in dine-in vessel
+  ---
+  duration_ms: 0.232199
+  type: 'test'
+  ...
+# Subtest: icedmatcha in takeaway vessel
+ok 35 - icedmatcha in takeaway vessel
+  ---
+  duration_ms: 0.230817
+  type: 'test'
+  ...
+# Subtest: caramelmac in dine-in vessel
+ok 36 - caramelmac in dine-in vessel
+  ---
+  duration_ms: 0.640343
+  type: 'test'
+  ...
+# Subtest: caramelmac in takeaway vessel
+ok 37 - caramelmac in takeaway vessel
+  ---
+  duration_ms: 0.346812
+  type: 'test'
+  ...
+# Subtest: caramellatte in dine-in vessel
+ok 38 - caramellatte in dine-in vessel
+  ---
+  duration_ms: 0.254934
+  type: 'test'
+  ...
+# Subtest: caramellatte in takeaway vessel
+ok 39 - caramellatte in takeaway vessel
+  ---
+  duration_ms: 0.296456
+  type: 'test'
+  ...
+# Subtest: caramelfrappe in dine-in vessel
+ok 40 - caramelfrappe in dine-in vessel
+  ---
+  duration_ms: 0.512691
+  type: 'test'
+  ...
+# Subtest: caramelfrappe in takeaway vessel
+ok 41 - caramelfrappe in takeaway vessel
+  ---
+  duration_ms: 0.335765
+  type: 'test'
+  ...
+# Subtest: vanillalatte in dine-in vessel
+ok 42 - vanillalatte in dine-in vessel
+  ---
+  duration_ms: 0.261062
+  type: 'test'
+  ...
+# Subtest: vanillalatte in takeaway vessel
+ok 43 - vanillalatte in takeaway vessel
+  ---
+  duration_ms: 0.261454
+  type: 'test'
+  ...
+# Subtest: vanillafrappe in dine-in vessel
+ok 44 - vanillafrappe in dine-in vessel
+  ---
+  duration_ms: 0.536246
+  type: 'test'
+  ...
+# Subtest: vanillafrappe in takeaway vessel
+ok 45 - vanillafrappe in takeaway vessel
+  ---
+  duration_ms: 0.48535
+  type: 'test'
+  ...
+# Subtest: cherrymocha in dine-in vessel
+ok 46 - cherrymocha in dine-in vessel
+  ---
+  duration_ms: 0.340382
+  type: 'test'
+  ...
+# Subtest: cherrymocha in takeaway vessel
+ok 47 - cherrymocha in takeaway vessel
+  ---
+  duration_ms: 0.278078
+  type: 'test'
+  ...
+# Subtest: aranciata in dine-in vessel
+ok 48 - aranciata in dine-in vessel
+  ---
+  duration_ms: 0.24585
+  type: 'test'
+  ...
+# Subtest: aranciata in takeaway vessel
+ok 49 - aranciata in takeaway vessel
+  ---
+  duration_ms: 0.233492
+  type: 'test'
+  ...
+# Subtest: spremuta in dine-in vessel
+ok 50 - spremuta in dine-in vessel
+  ---
+  duration_ms: 0.22619
+  type: 'test'
+  ...
+# Subtest: spremuta in takeaway vessel
+ok 51 - spremuta in takeaway vessel
+  ---
+  duration_ms: 0.41169
+  type: 'test'
+  ...
+# Subtest: cups never auto-pour; a pitcher transfers only on an explicit tap or drag command
+ok 52 - cups never auto-pour; a pitcher transfers only on an explicit tap or drag command
+  ---
+  duration_ms: 0.360382
+  type: 'test'
+  ...
+# Subtest: served dish returns, loads, washes offscreen and replenishes the correct ceramic once
+ok 53 - served dish returns, loads, washes offscreen and replenishes the correct ceramic once
+  ---
+  duration_ms: 1.466786
+  type: 'test'
+  ...
+# Subtest: drag disposal uses its source slot and disposable reserve is finite and size-specific
+ok 54 - drag disposal uses its source slot and disposable reserve is finite and size-specific
+  ---
+  duration_ms: 0.256987
+  type: 'test'
+  ...
+# Subtest: three fast oven loads and two towel spaces preserve the remaining pastry
+ok 55 - three fast oven loads and two towel spaces preserve the remaining pastry
+  ---
+  duration_ms: 0.777369
+  type: 'test'
+  ...
+# Subtest: machines run through turns, hidden tickets open on proximity, visible patience continues
+ok 56 - machines run through turns, hidden tickets open on proximity, visible patience continues
+  ---
+  duration_ms: 0.787344
+  type: 'test'
+  ...
+# Subtest: takeaway accepts food directly and requires the right drink size and lid and pays once across separate handoffs
+ok 57 - takeaway accepts food directly and requires the right drink size and lid and pays once across separate handoffs
+  ---
+  duration_ms: 1.703552
+  type: 'test'
+  ...
+# Subtest: large iced tea uses two portions and never requires espresso
+ok 58 - large iced tea uses two portions and never requires espresso
+  ---
+  duration_ms: 0.361023
+  type: 'test'
+  ...
+# Subtest: eight-ticket rehearsal completes on both ends and replays identically
+ok 59 - eight-ticket rehearsal completes on both ends and replays identically
+  ---
+  duration_ms: 8.749337
+  type: 'test'
+  ...
+# Subtest: spent portafilter must be knocked, ground into, removed, tamped and rotated into the group
+ok 60 - spent portafilter must be knocked, ground into, removed, tamped and rotated into the group
+  ---
+  duration_ms: 1.16401
+  type: 'test'
+  ...
+# Subtest: portafilter basket follows shared physical anchors and puck falls inside the bin
+ok 61 - portafilter basket follows shared physical anchors and puck falls inside the bin
+  ---
+  duration_ms: 0.919573
+  type: 'test'
+  ...
+# Subtest: tamping requires a separate mat placement; drag move-to-mat remains possible
+ok 62 - tamping requires a separate mat placement; drag move-to-mat remains possible
+  ---
+  duration_ms: 0.369655
+  type: 'test'
+  ...
+# Subtest: portrait camera preserves the full scene height, crops horizontally and clamps to ends
+ok 63 - portrait camera preserves the full scene height, crops horizontally and clamps to ends
+  ---
+  duration_ms: 0.304698
+  type: 'test'
+  ...
+# Subtest: iced takeaway accepts ice before an explicit espresso transfer; clear cup accepts a bare shot
+ok 64 - iced takeaway accepts ice before an explicit espresso transfer; clear cup accepts a bare shot
+  ---
+  duration_ms: 0.59174
+  type: 'test'
+  ...
+# Subtest: drag-style delivery names the source slot and preserves another staged item
+ok 65 - drag-style delivery names the source slot and preserves another staged item
+  ---
+  duration_ms: 0.631921
+  type: 'test'
+  ...
+# Subtest: campaign levels have deterministic order queues and equipment upgrades spend only earned coins
+ok 66 - campaign levels have deterministic order queues and equipment upgrades spend only earned coins
+  ---
+  duration_ms: 1.393867
+  type: 'test'
+  ...
+# Subtest: explicit drops preserve saucer, ingredient and inventory identity
+ok 67 - explicit drops preserve saucer, ingredient and inventory identity
+  ---
+  duration_ms: 0.851851
+  type: 'test'
+  ...
+# Subtest: only untouched brownies go back to the food station
+ok 68 - only untouched brownies go back to the food station
+  ---
+  duration_ms: 0.686673
+  type: 'test'
+  ...
+# Subtest: all six pitchers retain independent shots across concurrent pulls, transfers, and disposal
+ok 69 - all six pitchers retain independent shots across concurrent pulls, transfers, and disposal
+  ---
+  duration_ms: 1.070289
+  type: 'test'
+  ...
+# Subtest: invalid pitcher addresses and a detached group leave other groups intact
+ok 70 - invalid pitcher addresses and a detached group leave other groups intact
+  ---
+  duration_ms: 1.771844
+  type: 'test'
+  ...
+# Subtest: free mixing preserves early ice and lets players make an unmatched drink
+ok 71 - free mixing preserves early ice and lets players make an unmatched drink
+  ---
+  duration_ms: 0.456707
+  type: 'test'
+  ...
+# Subtest: airy and silky have dedicated stocks and the wand only blocks its own pitcher during a pour
+ok 72 - airy and silky have dedicated stocks and the wand only blocks its own pitcher during a pour
+  ---
+  duration_ms: 0.969108
+  type: 'test'
+  ...
+# Subtest: tank and fridge conserve milk through exhaustion, double taps and partial restocks
+ok 73 - tank and fridge conserve milk through exhaustion, double taps and partial restocks
+  ---
+  duration_ms: 0.544709
+  type: 'test'
+  ...
+# Subtest: only the detached head flushes, and its visible rinse completes before relocking
+ok 74 - only the detached head flushes, and its visible rinse completes before relocking
+  ---
+  duration_ms: 0.344508
+  type: 'test'
+  ...
+# Subtest: food bin loads are individually animated and cooking needs a separate command
+ok 75 - food bin loads are individually animated and cooking needs a separate command
+  ---
+  duration_ms: 0.802847
+  type: 'test'
+  ...
+# Subtest: independent wands finish staggered batches and reserve each portion once
+ok 76 - independent wands finish staggered batches and reserve each portion once
+  ---
+  duration_ms: 0.425039
+  type: 'test'
+  ...
+# Subtest: a dry glass of ice has zero liquid and each espresso and milk surface is distinct
+ok 77 - a dry glass of ice has zero liquid and each espresso and milk surface is distinct
+  ---
+  duration_ms: 0.629677
+  type: 'test'
+  ...
+# Subtest: cup handoff packs only a correct takeaway and pays once
+ok 78 - cup handoff packs only a correct takeaway and pays once
+  ---
+  duration_ms: 2.512298
+  type: 'test'
+  ...
+# Subtest: individual bag stock feeds the same hopper once and preserves the other wrappers
+ok 79 - individual bag stock feeds the same hopper once and preserves the other wrappers
+  ---
+  duration_ms: 0.369866
+  type: 'test'
+  ...
+# Subtest: mixed chocolate, matcha and cold milk have distinct colors and pouring order does not change the blend
+ok 80 - mixed chocolate, matcha and cold milk have distinct colors and pouring order does not change the blend
+  ---
+  duration_ms: 0.687614
+  type: 'test'
+  ...
+# Subtest: a rapid second drop waits for the exact chosen cup without reaching a replacement
+ok 81 - a rapid second drop waits for the exact chosen cup without reaching a replacement
+  ---
+  duration_ms: 0.532892
+  type: 'test'
+  ...
+# Subtest: breakfast rush supports shared demand, partial service, and a complete eight-guest shift
+ok 82 - breakfast rush supports shared demand, partial service, and a complete eight-guest shift
+  ---
+  duration_ms: 18.229093
+  type: 'test'
+  ...
+# Subtest: breakfast oven allows collection throughout the warning and recovers from an overbaked batch
+ok 83 - breakfast oven allows collection throughout the warning and recovers from an overbaked batch
+  ---
+  duration_ms: 1.854148
+  type: 'test'
+  ...
+# Subtest: two saucers can pour independently while a physical milk pitcher stays exclusive
+ok 84 - two saucers can pour independently while a physical milk pitcher stays exclusive
+  ---
+  duration_ms: 1.9419
+  type: 'test'
+  ...
+# Subtest: each rack keeps its own bake and pickup time across the counter turn
+ok 85 - each rack keeps its own bake and pickup time across the counter turn
+  ---
+  duration_ms: 0.838491
+  type: 'test'
+  ...
+# Subtest: two press plates grill concurrently and only the explicitly seasoned and collected panino has pesto
+ok 86 - two press plates grill concurrently and only the explicitly seasoned and collected panino has pesto
+  ---
+  duration_ms: 0.646262
+  type: 'test'
+  ...
+# Subtest: a neglected press plate burns independently, and clearing counts its waste only once
+ok 87 - a neglected press plate burns independently, and clearing counts its waste only once
+  ---
+  duration_ms: 1.558324
+  type: 'test'
+  ...
+# Subtest: invalid or occupied targets leave the hot line and towel untouched
+ok 88 - invalid or occupied targets leave the hot line and towel untouched
+  ---
+  duration_ms: 5.068427
+  type: 'test'
+  ...
+# Subtest: lunch opens in the kitchen, supports parallel plain and pesto service, and every ticket can be completed
+ok 89 - lunch opens in the kitchen, supports parallel plain and pesto service, and every ticket can be completed
+  ---
+  duration_ms: 9.572034
+  type: 'test'
+  ...
+# Subtest: dragging a panino seats it immediately without a second flight from the bin
+ok 90 - dragging a panino seats it immediately without a second flight from the bin
+  ---
+  duration_ms: 0.688526
+  type: 'test'
+  ...
+# Subtest: a full compactor keeps the dragged item, clears once, and keeps running through a turn
+ok 91 - a full compactor keeps the dragged item, clears once, and keeps running through a turn
+  ---
+  duration_ms: 0.495585
+  type: 'test'
+  ...
+# Subtest: Caffè in Piazza can serve every guest entirely from the two front counter positions
+ok 92 - Caffè in Piazza can serve every guest entirely from the two front counter positions
+  ---
+  duration_ms: 15.631952
+  type: 'test'
+  ...
+# (node:4023) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: individual glasses and takeaway sleeves follow dragging, staging, and clean returns
+ok 93 - individual glasses and takeaway sleeves follow dragging, staging, and clean returns
+  ---
+  duration_ms: 11.89051
+  type: 'test'
+  ...
+# (node:4043) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a service acknowledgment happens once at contact; leaving the counter suppresses stale lines
+ok 94 - a service acknowledgment happens once at contact; leaving the counter suppresses stale lines
+  ---
+  duration_ms: 31.826941
+  type: 'test'
+  ...
+# (node:4050) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: each customer walks forward through the queue and turns toward the exit after the handoff
+ok 95 - each customer walks forward through the queue and turns toward the exit after the handoff
+  ---
+  duration_ms: 16.06666
+  type: 'test'
+  ...
+# (node:4065) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: scoop starts empty, digs at the well, and follows the hand once filled
+ok 96 - scoop starts empty, digs at the well, and follows the hand once filled
+  ---
+  duration_ms: 1.523761
+  type: 'test'
+  ...
+# Subtest: each stock change reveals more of the well while remaining cubes stay seated
+ok 97 - each stock change reveals more of the well while remaining cubes stay seated
+  ---
+  duration_ms: 0.85152
+  type: 'test'
+  ...
+# (node:4076) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: both steam lanes render the full active cycle using their packaged, decoded art
+ok 98 - both steam lanes render the full active cycle using their packaged, decoded art
+  ---
+  duration_ms: 12.444213
+  type: 'test'
+  ...
+# (node:4082) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: shot buttons and portafilter grips are mutually exclusive in desktop and compact layouts
+ok 99 - shot buttons and portafilter grips are mutually exclusive in desktop and compact layouts
+  ---
+  duration_ms: 2.390565
+  type: 'test'
+  ...
+# Subtest: all reserve pocket and well retrieval rectangles have neutral internal gaps and retain capacities
+ok 100 - all reserve pocket and well retrieval rectangles have neutral internal gaps and retain capacities
+  ---
+  duration_ms: 4.193736
+  type: 'test'
+  ...
+# Subtest: explicit shot selection never falls through to a different pocket; only generic rack chooses first-free
+ok 101 - explicit shot selection never falls through to a different pocket; only generic rack chooses first-free
+  ---
+  duration_ms: 0.443877
+  type: 'test'
+  ...
+# Subtest: front and rear appliance slots and generic bezels have no shared ownership
+ok 102 - front and rear appliance slots and generic bezels have no shared ownership
+  ---
+  duration_ms: 2.083062
+  type: 'test'
+  ...
+# Subtest: supply targets are separated from all appliance slots and bezels, and front fridge
+ok 103 - supply targets are separated from all appliance slots and bezels, and front fridge
+  ---
+  duration_ms: 0.826753
+  type: 'test'
+  ...
+# Subtest: counter travel rejects non-carry controls, nested control origins, disabled buttons, and secondary starts
+ok 104 - counter travel rejects non-carry controls, nested control origins, disabled buttons, and secondary starts
+  ---
+  duration_ms: 1.052022
+  type: 'test'
+  ...
+# Subtest: neutral counter swipe still commits; secondary leave and cancel do not steal its pointer
+ok 105 - neutral counter swipe still commits; secondary leave and cancel do not steal its pointer
+  ---
+  duration_ms: 1.222399
+  type: 'test'
+  ...
+# Subtest: owned counter cancellation and lost capture settle without committing a turn
+ok 106 - owned counter cancellation and lost capture settle without committing a turn
+  ---
+  duration_ms: 0.23957
+  type: 'test'
+  ...
+# Subtest: item and header cancellation only invoke teardown for the owning pointer
+ok 107 - item and header cancellation only invoke teardown for the owning pointer
+  ---
+  duration_ms: 0.783118
+  type: 'test'
+  ...
+# (node:4098) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: the packaged workstation draws extraction and both milk textures through a complete cappuccino
+ok 108 - the packaged workstation draws extraction and both milk textures through a complete cappuccino
+  ---
+  duration_ms: 138.435351
+  type: 'test'
+  ...
+# (node:4109) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a full mixed shot reserve preserves portions and frees each group for the next extraction
+ok 109 - a full mixed shot reserve preserves portions and frees each group for the next extraction
+  ---
+  duration_ms: 5.455324
+  type: 'test'
+  ...
+# Subtest: food wells preserve individual pesto portions, capacity, and partial delivery
+ok 110 - food wells preserve individual pesto portions, capacity, and partial delivery
+  ---
+  duration_ms: 6.731583
+  type: 'test'
+  ...
+# (node:4110) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a free pull starts before any order and a second tap cannot consume another dose
+ok 111 - a free pull starts before any order and a second tap cannot consume another dose
+  ---
+  duration_ms: 23.726048
+  type: 'test'
+  ...
+# Subtest: freely assemble ristretto
+ok 112 - freely assemble ristretto
+  ---
+  duration_ms: 0.518189
+  type: 'test'
+  ...
+# Subtest: freely assemble espresso
+ok 113 - freely assemble espresso
+  ---
+  duration_ms: 0.217627
+  type: 'test'
+  ...
+# Subtest: freely assemble americano
+ok 114 - freely assemble americano
+  ---
+  duration_ms: 4.323723
+  type: 'test'
+  ...
+# Subtest: freely assemble latte
+ok 115 - freely assemble latte
+  ---
+  duration_ms: 0.516176
+  type: 'test'
+  ...
+# Subtest: freely assemble cappuccino
+ok 116 - freely assemble cappuccino
+  ---
+  duration_ms: 0.355525
+  type: 'test'
+  ...
+# Subtest: freely assemble frappe
+ok 117 - freely assemble frappe
+  ---
+  duration_ms: 0.228233
+  type: 'test'
+  ...
+# Subtest: freely assemble pastry
+ok 118 - freely assemble pastry
+  ---
+  duration_ms: 0.174402
+  type: 'test'
+  ...
+# Subtest: freely assemble warm
+ok 119 - freely assemble warm
+  ---
+  duration_ms: 0.360202
+  type: 'test'
+  ...
+# Subtest: freely assemble cookie
+ok 120 - freely assemble cookie
+  ---
+  duration_ms: 0.356025
+  type: 'test'
+  ...
+# Subtest: wrong additions and failed pulls preserve ingredient stock and the active item
+ok 121 - wrong additions and failed pulls preserve ingredient stock and the active item
+  ---
+  duration_ms: 0.231828
+  type: 'test'
+  ...
+# Subtest: two independent wells and an active drink survive full parking, wrong delivery and targeted discard
+ok 122 - two independent wells and an active drink survive full parking, wrong delivery and targeted discard
+  ---
+  duration_ms: 0.772942
+  type: 'test'
+  ...
+# Subtest: serve a parked cup during a running pull without interrupting it
+ok 123 - serve a parked cup during a running pull without interrupting it
+  ---
+  duration_ms: 0.248113
+  type: 'test'
+  ...
+# Subtest: bar travel keeps waiting patience running and keeps new orders hidden until proximity
+ok 124 - bar travel keeps waiting patience running and keeps new orders hidden until proximity
+  ---
+  duration_ms: 2.386118
+  type: 'test'
+  ...
+# Subtest: independent batches, pantry pickup, loading bounds and hold expiry
+ok 125 - independent batches, pantry pickup, loading bounds and hold expiry
+  ---
+  duration_ms: 0.436306
+  type: 'test'
+  ...
+# Subtest: expiry never consumes a prepared item and the shift ends exactly once
+ok 126 - expiry never consumes a prepared item and the shift ends exactly once
+  ---
+  duration_ms: 5.554583
+  type: 'test'
+  ...
+# Subtest: paced three-star service includes a mistake, hesitation, mixed orders and honest refill trips
+ok 127 - paced three-star service includes a mistake, hesitation, mixed orders and honest refill trips
+  ---
+  duration_ms: 7.477344
+  type: 'test'
+  ...
+# (node:4131) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: exact destination owns the release; incompatible, disabled, and carry-only controls block snapping
+ok 128 - exact destination owns the release; incompatible, disabled, and carry-only controls block snapping
+  ---
+  duration_ms: 1.129058
+  type: 'test'
+  ...
+# Subtest: neutral snap filters unusable and invisible targets, and mouse radius zero never snaps
+ok 129 - neutral snap filters unusable and invisible targets, and mouse radius zero never snaps
+  ---
+  duration_ms: 0.442756
+  type: 'test'
+  ...
+# Subtest: equal and subpixel ties cancel independent of enumeration order; duplicate guest targets are one destination
+ok 130 - equal and subpixel ties cancel independent of enumeration order; duplicate guest targets are one destination
+  ---
+  duration_ms: 0.143365
+  type: 'test'
+  ...
+# Subtest: bin is direct-hit only, including when it is the nearest valid target
+ok 131 - bin is direct-hit only, including when it is the nearest valid target
+  ---
+  duration_ms: 0.16629
+  type: 'test'
+  ...
+# Subtest: milk steam, pitcher and pour controls have exclusive lane and vertical ownership
+ok 132 - milk steam, pitcher and pour controls have exclusive lane and vertical ownership
+  ---
+  duration_ms: 0.613312
+  type: 'test'
+  ...
+# Subtest: all five syrup targets have improved spacing and remain inside the stage
+ok 133 - all five syrup targets have improved spacing and remain inside the stage
+  ---
+  duration_ms: 0.206892
+  type: 'test'
+  ...
+# Subtest: shot rack, its eight pockets, food wells and occupied towels never intersect either saucer for any vessel
+ok 134 - shot rack, its eight pockets, food wells and occupied towels never intersect either saucer for any vessel
+  ---
+  duration_ms: 2.683835
+  type: 'test'
+  ...
+# Subtest: pour eligibility respects stock, lids, duplicate ingredients and an existing directed-pour queue
+ok 135 - pour eligibility respects stock, lids, duplicate ingredients and an existing directed-pour queue
+  ---
+  duration_ms: 2.481241
+  type: 'test'
+  ...
+# Subtest: shot staging respects exact occupied pockets and reserve capacity; reserve shots cannot be re-staged
+ok 136 - shot staging respects exact occupied pockets and reserve capacity; reserve shots cannot be re-staged
+  ---
+  duration_ms: 0.749387
+  type: 'test'
+  ...
+# Subtest: cups, food, appliances and bin only highlight usable destinations
+ok 137 - cups, food, appliances and bin only highlight usable destinations
+  ---
+  duration_ms: 0.79785
+  type: 'test'
+  ...
+# Subtest: guest destination revalidates the actual ready drink, pending pour and guest state
+ok 138 - guest destination revalidates the actual ready drink, pending pour and guest state
+  ---
+  duration_ms: 0.646552
+  type: 'test'
+  ...
+1..138
+# tests 138
+# suites 0
+# pass 138
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1387.504574
+
+Focused 20 tests are included in supplementary 138, not additive. No browser/device verification. No production dist generated.

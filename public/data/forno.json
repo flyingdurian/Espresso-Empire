@@ -1,0 +1,15 @@
+{
+  "name": "Pranzo al Forno",
+  "partialRelief": 12,
+  "ovenGrace": 24,
+  "ovenWarning": 7,
+  "pressGrace": 17,
+  "orders": [
+    {"end":"Door","spot":0,"look":"e","name":"Luca","mode":"Dine in","size":"Medium","drink":null,"food":"grilled","after":0,"patience":52},
+    {"end":"Door","spot":1,"look":"a","name":"Mina","mode":"Dine in","size":"Medium","drink":"espresso","food":"pesto","after":1,"patience":79},
+    {"end":"Window","spot":0,"look":"d","name":"Eva","mode":"To go","size":"Small","drink":null,"food":"baked","after":17,"patience":56},
+    {"end":"Window","spot":1,"look":"b","name":"Giulia","mode":"Dine in","size":"Medium","drink":"tea","food":"baked","after":20,"patience":72},
+    {"end":"Door","spot":0,"look":"f","name":"Ada","mode":"To go","size":"Small","drink":"americano","food":"pesto","after":48,"patience":80},
+    {"end":"Window","spot":0,"look":"c","name":"Nico","mode":"Dine in","size":"Medium","drink":null,"food":"grilled","after":51,"patience":60}
+  ]
+}

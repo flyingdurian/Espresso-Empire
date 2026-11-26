@@ -1,0 +1,51 @@
+{
+  "profiles": {
+    "Regular": {
+      "stride": 0.95,
+      "greet": 0.84,
+      "lean": 0.5,
+      "repeat": 6.2,
+      "sip": 1.1
+    },
+    "Student": {
+      "stride": 1.16,
+      "greet": 1.0,
+      "lean": 0.92,
+      "repeat": 4.9,
+      "sip": 0.82
+    },
+    "Remote worker": {
+      "stride": 0.87,
+      "greet": 0.72,
+      "lean": 0.36,
+      "repeat": 7.4,
+      "sip": 1.2
+    },
+    "Tourist": {
+      "stride": 0.93,
+      "greet": 1.18,
+      "lean": 0.63,
+      "repeat": 5.9,
+      "sip": 1.09
+    },
+    "Critic": {
+      "stride": 1.03,
+      "greet": 0.63,
+      "lean": 1.05,
+      "repeat": 6.8,
+      "sip": 0.9
+    }
+  },
+  "byLook": {
+    "a": "Regular",
+    "b": "Student",
+    "c": "Remote worker",
+    "d": "Critic",
+    "e": "Tourist",
+    "f": "Regular"
+  },
+  "speechGap": 0.36,
+  "ambientGap": 1.25,
+  "maxLate": 0.48,
+  "recordings": []
+}

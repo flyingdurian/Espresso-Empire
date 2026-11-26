@@ -1,0 +1,174 @@
+{
+  "type": "object",
+  "properties": {
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "vessels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "recipes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "icon": {
+            "type": "string",
+            "minLength": 1
+          },
+          "vessel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "components": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unlockLevel": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "vessel",
+          "components",
+          "price",
+          "unlockLevel"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "stations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "section": {
+            "type": "string",
+            "minLength": 1
+          },
+          "batch": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "cycleSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "graceSeconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "tiers": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "section",
+          "batch",
+          "cycleSeconds",
+          "graceSeconds",
+          "outputs",
+          "tiers"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "archetypes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "patienceSeconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "tipMultiplier": {
+            "type": "number",
+            "minimum": 0
+          },
+          "orderPool": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "patienceSeconds",
+          "tipMultiplier",
+          "orderPool"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "components",
+    "vessels",
+    "recipes",
+    "stations",
+    "archetypes"
+  ],
+  "additionalProperties": false
+}

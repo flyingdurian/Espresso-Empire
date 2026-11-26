@@ -1,0 +1,452 @@
+{
+  "seed": 611,
+  "tickMs": 50,
+  "stations": {
+    "grinder": 5,
+    "knock": 1,
+    "handleTravel": 0.55,
+    "handleLock": 0.7,
+    "steamer": 3.3,
+    "oven": 5,
+    "short": 1.5,
+    "standard": 2.25,
+    "transfer": 0.95,
+    "finish": 0.85,
+    "load": 0.42,
+    "service": 0.95,
+    "turn": 0.5,
+    "entrance": 2.7,
+    "departure": 2.4,
+    "press": 4.5,
+    "tea": 4,
+    "blend": 3.1,
+    "lid": 0.28,
+    "compact": 1.45,
+    "wash": 4.5,
+    "dishReturn": 3,
+    "microwave": 2.7,
+    "purge": 1.15,
+    "foodFlight": 0.4,
+    "refillMilk": 1.2,
+    "fridgeDoor": 1.8,
+    "citrus": 3.8
+  },
+  "capacity": {
+    "hopper": 6,
+    "startBeans": 6,
+    "startGround": 0,
+    "grindBatch": 6,
+    "milkBatch": 3,
+    "oven": 3,
+    "press": 2,
+    "saucers": 2,
+    "towel": 2,
+    "tea": 3,
+    "blend": 3,
+    "largePortions": 2,
+    "ceramic": 3,
+    "takeaway": 5,
+    "reserve": 5,
+    "wash": 4,
+    "basketDoses": 6,
+    "beanBags": 6,
+    "heads": 3,
+    "pitchers": 2,
+    "ice": 8,
+    "bin": 6,
+    "finishPortions": 4,
+    "milkTank": 9,
+    "carton": 6,
+    "milkCartons": 4,
+    "citrus": 3
+  },
+  "cups": {
+    "demi": "Demitasse",
+    "mug": "Blue mug",
+    "glass": "Latte glass",
+    "bowl": "Cappuccino bowl",
+    "tall": "Frapp\u00e9 glass",
+    "paper": "Paper cup",
+    "clear": "Clear cup"
+  },
+  "finishes": {
+    "water": "Hot water",
+    "milk": "Silky milk",
+    "foam": "Airy foam",
+    "cold": "Chilled base",
+    "ice": "Ice",
+    "coldmilk": "Cold milk",
+    "tea": "Citrus tea",
+    "matcha": "Matcha concentrate",
+    "cocoa": "Chocolate sauce",
+    "caramel": "Salted caramel",
+    "vanilla": "Vanilla syrup",
+    "cherry": "Amarena cherry",
+    "orange": "Fresh orange juice"
+  },
+  "recipes": {
+    "ristretto": {
+      "name": "Ristretto",
+      "cup": "demi",
+      "shot": "short",
+      "add": [],
+      "price": 12,
+      "travelCup": "paper"
+    },
+    "espresso": {
+      "name": "Espresso",
+      "cup": "demi",
+      "shot": "standard",
+      "add": [],
+      "price": 12,
+      "travelCup": "paper"
+    },
+    "americano": {
+      "name": "Americano",
+      "cup": "mug",
+      "shot": "standard",
+      "add": [
+        "water"
+      ],
+      "price": 15,
+      "travelCup": "paper"
+    },
+    "latte": {
+      "name": "Latte",
+      "cup": "glass",
+      "shot": "standard",
+      "add": [
+        "milk"
+      ],
+      "price": 17,
+      "travelCup": "paper"
+    },
+    "cappuccino": {
+      "name": "Cappuccino",
+      "cup": "bowl",
+      "shot": "standard",
+      "add": [
+        "milk",
+        "foam"
+      ],
+      "price": 19,
+      "travelCup": "paper"
+    },
+    "frappe": {
+      "name": "Coffee frapp\u00e9",
+      "cup": "tall",
+      "shot": "standard",
+      "add": [
+        "cold"
+      ],
+      "price": 21,
+      "travelCup": "clear"
+    },
+    "iced": {
+      "name": "Iced latte",
+      "cup": "tall",
+      "shot": "standard",
+      "add": [
+        "ice",
+        "coldmilk"
+      ],
+      "price": 18,
+      "travelCup": "clear"
+    },
+    "tea": {
+      "name": "Citrus iced tea",
+      "cup": "tall",
+      "shot": null,
+      "add": [
+        "ice",
+        "tea"
+      ],
+      "price": 15,
+      "travelCup": "clear"
+    },
+    "macchiato": {
+      "name": "Espresso macchiato",
+      "cup": "demi",
+      "shot": "standard",
+      "add": [
+        "foam"
+      ],
+      "price": 16,
+      "travelCup": "paper"
+    },
+    "flatwhite": {
+      "name": "Ristretto flat white",
+      "cup": "mug",
+      "shot": "short",
+      "add": [
+        "milk"
+      ],
+      "price": 20,
+      "travelCup": "paper"
+    },
+    "hotcocoa": {
+      "name": "Hot chocolate",
+      "cup": "mug",
+      "shot": null,
+      "add": [
+        "cocoa",
+        "milk"
+      ],
+      "price": 17,
+      "travelCup": "paper"
+    },
+    "mocha": {
+      "name": "Caff\u00e8 mocha",
+      "cup": "glass",
+      "shot": "standard",
+      "add": [
+        "cocoa",
+        "milk"
+      ],
+      "price": 21,
+      "travelCup": "paper"
+    },
+    "icedmocha": {
+      "name": "Iced mocha",
+      "cup": "tall",
+      "shot": "standard",
+      "add": [
+        "ice",
+        "coldmilk",
+        "cocoa"
+      ],
+      "price": 23,
+      "travelCup": "clear"
+    },
+    "matchalatte": {
+      "name": "Matcha latte",
+      "cup": "bowl",
+      "shot": null,
+      "add": [
+        "matcha",
+        "milk"
+      ],
+      "price": 19,
+      "travelCup": "paper"
+    },
+    "icedmatcha": {
+      "name": "Iced matcha latte",
+      "cup": "tall",
+      "shot": null,
+      "add": [
+        "matcha",
+        "coldmilk",
+        "ice"
+      ],
+      "price": 21,
+      "travelCup": "clear"
+    },
+    "caramelmac": {
+      "name": "Caramel macchiato",
+      "cup": "glass",
+      "shot": "standard",
+      "add": [
+        "milk",
+        "foam",
+        "caramel"
+      ],
+      "price": 23,
+      "travelCup": "paper"
+    },
+    "caramellatte": {
+      "name": "Salted caramel latte",
+      "cup": "glass",
+      "shot": "standard",
+      "add": [
+        "milk",
+        "caramel"
+      ],
+      "price": 21,
+      "travelCup": "paper"
+    },
+    "caramelfrappe": {
+      "name": "Salted caramel frapp\u00e9",
+      "cup": "tall",
+      "shot": "standard",
+      "add": [
+        "cold",
+        "caramel"
+      ],
+      "price": 24,
+      "travelCup": "clear"
+    },
+    "vanillalatte": {
+      "name": "Vanilla latte",
+      "cup": "glass",
+      "shot": "standard",
+      "add": [
+        "milk",
+        "vanilla"
+      ],
+      "price": 23,
+      "travelCup": "paper"
+    },
+    "vanillafrappe": {
+      "name": "Vanilla coffee frapp\u00e9",
+      "cup": "tall",
+      "shot": "standard",
+      "add": [
+        "cold",
+        "vanilla"
+      ],
+      "price": 24,
+      "travelCup": "clear"
+    },
+    "cherrymocha": {
+      "name": "Amarena mocha",
+      "cup": "mug",
+      "shot": "standard",
+      "add": [
+        "milk",
+        "cocoa",
+        "cherry"
+      ],
+      "price": 26,
+      "travelCup": "paper"
+    },
+    "aranciata": {
+      "name": "Amarena aranciata",
+      "cup": "tall",
+      "shot": null,
+      "add": [
+        "orange",
+        "cherry",
+        "ice"
+      ],
+      "price": 21,
+      "travelCup": "clear"
+    },
+    "spremuta": {
+      "name": "Spremuta d\u2019arancia",
+      "cup": "tall",
+      "shot": null,
+      "add": [
+        "orange"
+      ],
+      "price": 15,
+      "travelCup": "clear"
+    }
+  },
+  "orders": [
+    {
+      "end": "Door",
+      "spot": 0,
+      "look": "a",
+      "name": "Mina",
+      "mode": "Dine in",
+      "drink": "latte",
+      "food": null,
+      "after": 0,
+      "patience": 65,
+      "size": "Medium"
+    },
+    {
+      "end": "Door",
+      "spot": 1,
+      "look": "b",
+      "name": "Leo",
+      "mode": "To go",
+      "drink": "americano",
+      "food": "brownie",
+      "after": 5,
+      "patience": 67,
+      "size": "Medium"
+    },
+    {
+      "end": "Window",
+      "spot": 0,
+      "look": "c",
+      "name": "Emi",
+      "mode": "To go",
+      "drink": "tea",
+      "food": "grilled",
+      "after": 6,
+      "patience": 74,
+      "size": "Large"
+    },
+    {
+      "end": "Window",
+      "spot": 1,
+      "look": "d",
+      "name": "Carlo",
+      "mode": "Dine in",
+      "drink": "espresso",
+      "food": "baked",
+      "after": 12,
+      "patience": 65,
+      "size": "Medium"
+    },
+    {
+      "end": "Door",
+      "spot": 0,
+      "look": "c",
+      "name": "Nora",
+      "mode": "To go",
+      "drink": "iced",
+      "food": null,
+      "after": 19,
+      "patience": 62,
+      "size": "Medium"
+    },
+    {
+      "end": "Door",
+      "spot": 1,
+      "look": "d",
+      "name": "Enzo",
+      "mode": "Dine in",
+      "drink": "cappuccino",
+      "food": "pesto",
+      "after": 25,
+      "patience": 72,
+      "size": "Medium"
+    },
+    {
+      "end": "Window",
+      "spot": 0,
+      "look": "a",
+      "name": "Iris",
+      "mode": "Dine in",
+      "drink": "frappe",
+      "food": null,
+      "after": 29,
+      "patience": 62,
+      "size": "Medium"
+    },
+    {
+      "end": "Window",
+      "spot": 1,
+      "look": "b",
+      "name": "Luca",
+      "mode": "To go",
+      "drink": "ristretto",
+      "food": "baked",
+      "after": 35,
+      "patience": 62,
+      "size": "Small"
+    }
+  ],
+  "jitterSeconds": 1,
+  "foods": {
+    "baked": {
+      "name": "Cornetto",
+      "price": 9
+    },
+    "grilled": {
+      "name": "Mozzarella panino",
+      "price": 16
+    },
+    "pesto": {
+      "name": "Pesto panino",
+      "price": 18
+    },
+    "brownie": {
+      "name": "Brownie",
+      "price": 8
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "shots": { "capacity": 8, "columns": 4, "well": {"x": 480,"y": 606,"w": 167,"h": 85} },
+  "panini": { "capacity": 4, "columns": 2, "well": {"x": 903,"y": 631,"w": 127,"h": 91} },
+  "pastries": { "capacity": 3, "columns": 1, "well": {"x": 1034,"y": 631,"w": 103,"h": 91} },
+  "carafes": {"x":1442,"y":800,"w":207,"h":48}
+}

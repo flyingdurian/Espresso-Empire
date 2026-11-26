@@ -1,0 +1,21 @@
+{
+ "name": "tower-cafe",
+ "version": "0.1.0",
+ "private": true,
+ "type": "module",
+ "scripts": {
+  "dev": "vite --host 0.0.0.0",
+  "build": "tsc --noEmit && vite build",
+  "test": "node --experimental-strip-types --test tests/*.test.ts",
+  "headless": "node --experimental-strip-types scripts/headless.ts"
+ },
+ "dependencies": {
+  "ajv": "8.17.1",
+  "pixi.js": "8.10.2"
+ },
+ "devDependencies": {
+  "@types/node": "^24.10.0",
+  "typescript": "5.8.3",
+  "vite": "6.3.5"
+ }
+}

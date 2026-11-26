@@ -1,0 +1,105 @@
+{
+  "name": "Morning at the Bar",
+  "partialRelief": 12,
+  "ovenGrace": 26,
+  "pressGrace": 18,
+  "ovenWarning": 7,
+  "orders": [
+    {
+      "end": "Door",
+      "spot": 0,
+      "look": "a",
+      "name": "Mina",
+      "drink": "cappuccino",
+      "food": "baked",
+      "after": 0,
+      "patience": 85,
+      "mode": "Dine in",
+      "size": "Medium"
+    },
+    {
+      "end": "Door",
+      "spot": 1,
+      "look": "e",
+      "name": "Luca",
+      "drink": null,
+      "food": "baked",
+      "after": 1,
+      "patience": 48,
+      "mode": "Dine in",
+      "size": "Medium"
+    },
+    {
+      "end": "Window",
+      "spot": 0,
+      "look": "b",
+      "name": "Giulia",
+      "drink": "espresso",
+      "food": null,
+      "after": 18,
+      "patience": 56,
+      "mode": "To go",
+      "size": "Small"
+    },
+    {
+      "end": "Door",
+      "spot": 1,
+      "look": "c",
+      "name": "Nico",
+      "drink": "americano",
+      "food": "grilled",
+      "after": 34,
+      "patience": 75,
+      "mode": "Dine in",
+      "size": "Medium"
+    },
+    {
+      "end": "Window",
+      "spot": 1,
+      "look": "d",
+      "name": "Eva",
+      "drink": null,
+      "food": "grilled",
+      "after": 38,
+      "patience": 64,
+      "mode": "Dine in",
+      "size": "Medium"
+    },
+    {
+      "end": "Door",
+      "spot": 0,
+      "look": "f",
+      "name": "Ada",
+      "drink": "tea",
+      "food": null,
+      "after": 51,
+      "patience": 60,
+      "mode": "Dine in",
+      "size": "Medium"
+    },
+    {
+      "end": "Door",
+      "spot": 1,
+      "look": "b",
+      "name": "Giulia",
+      "drink": "latte",
+      "food": "baked",
+      "after": 73,
+      "patience": 85,
+      "mode": "Dine in",
+      "size": "Medium"
+    },
+    {
+      "end": "Window",
+      "spot": 0,
+      "look": "e",
+      "name": "Luca",
+      "drink": "frappe",
+      "food": null,
+      "after": 76,
+      "patience": 72,
+      "mode": "To go",
+      "size": "Small"
+    }
+  ]
+}

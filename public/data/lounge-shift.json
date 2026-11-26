@@ -1,0 +1,286 @@
+{
+  "id": "via-bianca-cart-study",
+  "seed": 4092,
+  "liftSeconds": 1.0,
+  "firstVisitDelay": [
+    4,
+    6
+  ],
+  "returnDelay": [
+    10,
+    14
+  ],
+  "supplies": {
+    "dose": {
+      "label": "Doses",
+      "start": 4,
+      "capacity": 4,
+      "batch": 4,
+      "cycle": 3.6,
+      "grace": 12,
+      "station": "Grinder"
+    },
+    "milk": {
+      "label": "Milk",
+      "start": 2,
+      "capacity": 3,
+      "batch": 3,
+      "cycle": 4.5,
+      "grace": 12,
+      "station": "Steamer"
+    },
+    "warm": {
+      "label": "Warm cornetti",
+      "start": 1,
+      "capacity": 2,
+      "batch": 2,
+      "cycle": 5,
+      "grace": 12,
+      "station": "Oven"
+    },
+    "water": {
+      "label": "Hot water",
+      "start": 2,
+      "capacity": 3,
+      "batch": 3,
+      "cycle": 0,
+      "grace": 0,
+      "station": "Water urn"
+    },
+    "cold": {
+      "label": "Chilled base",
+      "start": 1,
+      "capacity": 2,
+      "batch": 2,
+      "cycle": 0,
+      "grace": 0,
+      "station": "Cold jug"
+    },
+    "bread": {
+      "label": "Plain cornetti",
+      "start": 1,
+      "capacity": 2,
+      "batch": 2,
+      "cycle": 0,
+      "grace": 0,
+      "station": "Bread basket"
+    },
+    "cookie": {
+      "label": "Cookies",
+      "start": 1,
+      "capacity": 2,
+      "batch": 2,
+      "cycle": 0,
+      "grace": 0,
+      "station": "Cookie caddy"
+    }
+  },
+  "recipes": {
+    "ristretto": {
+      "label": "Ristretto",
+      "price": 12,
+      "steps": [
+        "short"
+      ]
+    },
+    "espresso": {
+      "label": "Espresso",
+      "price": 12,
+      "steps": [
+        "standard"
+      ]
+    },
+    "americano": {
+      "label": "Americano",
+      "price": 15,
+      "steps": [
+        "standard",
+        "water"
+      ]
+    },
+    "latte": {
+      "label": "Latte",
+      "price": 17,
+      "steps": [
+        "standard",
+        "milk"
+      ]
+    },
+    "cappuccino": {
+      "label": "Cappuccino",
+      "price": 19,
+      "steps": [
+        "standard",
+        "milk",
+        "foam"
+      ]
+    },
+    "frappe": {
+      "label": "Coffee frappé",
+      "price": 21,
+      "steps": [
+        "standard",
+        "cold"
+      ]
+    },
+    "pastry": {
+      "label": "Plain cornetto",
+      "price": 8,
+      "steps": [
+        "bread"
+      ]
+    },
+    "warm": {
+      "label": "Warm cornetto",
+      "price": 10,
+      "steps": [
+        "warm"
+      ]
+    },
+    "cookie": {
+      "label": "Wrapped cookie",
+      "price": 6,
+      "steps": [
+        "cookie"
+      ]
+    }
+  },
+  "seats": [
+    {
+      "art": "regular",
+      "name": "Enzo"
+    },
+    {
+      "art": "writer",
+      "name": "Sofia"
+    },
+    {
+      "art": "reader",
+      "name": "Livia"
+    },
+    {
+      "art": "visitor",
+      "name": "Marco"
+    }
+  ],
+  "orders": [
+    {
+      "items": [
+        "espresso"
+      ],
+      "patience": 63
+    },
+    {
+      "items": [
+        "latte"
+      ],
+      "patience": 70
+    },
+    {
+      "items": [
+        "ristretto",
+        "cookie"
+      ],
+      "patience": 74
+    },
+    {
+      "items": [
+        "americano"
+      ],
+      "patience": 72
+    },
+    {
+      "items": [
+        "cappuccino",
+        "warm"
+      ],
+      "patience": 91
+    },
+    {
+      "items": [
+        "frappe"
+      ],
+      "patience": 88
+    },
+    {
+      "items": [
+        "latte",
+        "pastry"
+      ],
+      "patience": 86
+    },
+    {
+      "items": [
+        "espresso"
+      ],
+      "patience": 80
+    }
+  ],
+  "openingDelay": 1.8,
+  "wells": 2,
+  "actions": {
+    "short": {
+      "label": "Short pull",
+      "base": null,
+      "result": "ristretto",
+      "supply": "dose",
+      "seconds": 0.8
+    },
+    "standard": {
+      "label": "Standard pull",
+      "base": null,
+      "result": "espresso",
+      "supply": "dose",
+      "seconds": 1.1
+    },
+    "water": {
+      "label": "Hot water",
+      "base": "espresso",
+      "result": "americano",
+      "supply": "water",
+      "seconds": 0.55
+    },
+    "milk": {
+      "label": "Milk",
+      "base": "espresso",
+      "result": "latte",
+      "supply": "milk",
+      "seconds": 0.7
+    },
+    "foam": {
+      "label": "Foam",
+      "base": "latte",
+      "result": "cappuccino",
+      "supply": null,
+      "seconds": 0.5
+    },
+    "cold": {
+      "label": "Chilled base",
+      "base": "espresso",
+      "result": "frappe",
+      "supply": "cold",
+      "seconds": 0.7
+    },
+    "bread": {
+      "label": "Plain cornetto",
+      "base": null,
+      "result": "pastry",
+      "supply": "bread",
+      "seconds": 0.25
+    },
+    "warm": {
+      "label": "Warm cornetto",
+      "base": null,
+      "result": "warm",
+      "supply": "warm",
+      "seconds": 0.25
+    },
+    "cookie": {
+      "label": "Cookie",
+      "base": null,
+      "result": "cookie",
+      "supply": "cookie",
+      "seconds": 0.25
+    }
+  }
+}

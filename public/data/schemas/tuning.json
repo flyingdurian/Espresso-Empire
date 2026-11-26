@@ -1,0 +1,112 @@
+{
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "tickMs": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "staggerSeconds": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "neighborSeconds": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "patienceSeconds": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "zoneBoundaries": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "exclusiveMaximum": 1
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "tipFractions": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": 0
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "comboSeconds": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "comboBonuses": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "minItems": 1
+    },
+    "smilesByZone": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "starFractions": {
+      "type": "array",
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "orderLimit": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "cartDecay": {
+      "const": false
+    }
+  },
+  "required": [
+    "version",
+    "tickMs",
+    "staggerSeconds",
+    "neighborSeconds",
+    "patienceSeconds",
+    "zoneBoundaries",
+    "tipFractions",
+    "comboSeconds",
+    "comboBonuses",
+    "smilesByZone",
+    "starFractions",
+    "orderLimit",
+    "cartDecay"
+  ],
+  "additionalProperties": false
+}
