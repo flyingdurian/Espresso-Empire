@@ -1,16 +1,16 @@
-import {cupsX,stageCupY,vesselHeight,milkSpouts,finishSources,heads,stage,foodBins,fridge,type Syrup} from './station-layout.ts'
+import {cupsX,stageCupY,vesselHeight,milkSpouts,finishSources,heads,stage,foodBins,miniRack,citrusPress,type Syrup} from './station-layout.ts'
 import {frontFoodSeat,pocketSeat,servicePass} from './service-pass.ts'
-import {rackSeat,type HotRect} from './hot-appliance.ts'
+import {rackSeat,frontHot,frontPressPoint,type HotRect} from './hot-appliance.ts'
 import type {Drink,Texture,HotBay} from './bench.ts'
 
 /** Center-based logical rectangles shared by the DOM and regression tests. */
 export type TouchBox={x:number;y:number;w:number;h:number}
 export function milkTouch(texture:Texture){
  const x=milkSpouts[texture].x
- return {steam:{x,y:265,w:45,h:38},pitcher:{x,y:350,w:45,h:52},pour:{x,y:397,w:45,h:32}}
+ return {steam:{x,y:265,w:45,h:38},pitcher:{x,y:milkSpouts[texture].y-22,w:45,h:52},pour:{x,y:397,w:45,h:32}}
 }
 export function syrupTouch(key:Syrup):TouchBox{
- const p=finishSources[key];return {x:p.x,y:p.y-p.h/2,w:42,h:p.h}
+ const p=finishSources[key];return {x:p.x,y:p.y-p.h/2,w:40,h:p.h}
 }
 export function saucerTouch(i:number,c:Pick<Drink,'cup'|'size'>|null):TouchBox{
  const h=c?vesselHeight(c.cup,c.size):66
@@ -60,15 +60,20 @@ export function applianceTouch(station:HotBay,box:HotRect,count:number){
   const pitch=oven&&count>1?box.h*.313/(count-1):box.h*.48
   const width=oven?box.w*.91:box.w/count-6
   const height=oven?Math.min(box.h*.48/count,pitch-6):box.h*.82
-  return {x:box.x+box.w*seat.x,y:box.y+box.h*(oven?seat.y-.04:.48),w:width,h:height}
+  const x=box.x+box.w*seat.x,y=box.y+box.h*(oven?seat.y-.04:.48)
+  // Front press is drawn with a slight shear; keep the exclusive rectangular
+  // touch areas inside the projected plates (and the original appliance bounds).
+  if(!oven&&box===frontHot.press)return {...frontPressPoint(x,y),w:width,h:height*.90-width*.10}
+  return {x,y,w:width,h:height}
  })
  // Bezel surrounds the complete un-inset slot band, including plate edge gutters.
  const interior=oven?slots.map(p=>({...p,h:p.h+6})):slots.map(p=>({...p,w:p.w+6}))
  return {slots,bezel:bezelTouch(outer,interior)}
 }
 export function frontSupplyTouch(kind:keyof typeof foodBins):TouchBox{
- const p=foodBins[kind],w=86,h=47
- // The cornetto bin's bottom previously extended into the fridge control.
- const bottom=Math.min(p.y+h/2,fridge.y-fridge.h/2-4)
- return fromEdges(p.x-w/2,p.y-h/2,p.x+w/2,bottom)
+ const p=miniRack[kind==='raw'?0:3];return {x:p.x,y:p.y-19,w:46,h:40}
+}
+export function citrusTouch(){
+ const p=citrusPress,j=p.carafe
+ return {run:{x:p.x,y:p.y-p.h*.65,w:76,h:64},juice:{x:j.x,y:j.y-18,w:74,h:36}}
 }

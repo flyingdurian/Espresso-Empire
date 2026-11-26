@@ -1,6 +1,6 @@
 import {guestWalk,drawGait,leavingCounter,gaitAtlases} from './guest-walk.ts'
 import {servicePass,reserveHead,frontFoodSeat,pocketSeat} from './service-pass.ts'
-import {iceWell,scoopPose,scoopWithIce} from './ice-service.ts'
+import {iceWell,scoopPose,scoopWithIce,icePortions,iceCubeCount,iceCubeStart} from './ice-service.ts'
 import {drawCupRacks} from './cup-rack.ts'
 import {espressoParts,glassHeight,doseVolume,shotGlass,brewGroup,extraction} from './espresso-bar.ts'
 import {drawMilkPitcher,drawSteamLane,loadMilkArt,milkCycle} from './milk-station.ts'
@@ -9,13 +9,14 @@ import {frontGalley} from './galley-layout.ts'
 import {drawWastePress} from './waste.ts'
 import {pourPose,tool,phase,fillProgress} from './drink-motion.ts'
 import type {Slide} from './counter-travel.ts'
-import {frontHot,hotArt,makeHotAppliance,rackFoodHeight,rackPosition} from './hot-appliance.ts'
+import {frontHot,hotArt,makeHotAppliance,rackFoodHeight,rackPosition,frontPressPerspective,frontPressPoint} from './hot-appliance.ts'
 import {beverageMachineArt,drawRearKitchen} from './rear-kitchen.ts'
 import {actingProfile} from './guest-performance.ts'
 import {receivingSpriteIds,handoffAnchor,sipPhase} from './handoff.ts'
 import {type Bench,type End,type Drink,type Delivery} from './bench.ts'
-import {holders,heads,brewPoint,cupsX,serveX,cupArt,stage,type Carry,stageCupY,beanBags,foodBins,milkSpouts,vesselHeight,finishSources,citrusPress,isSyrup,syrupKeys} from './station-layout.ts'
+import {holders,heads,brewPoint,cupsX,serveX,cupArt,stage,type Carry,stageCupY,beanBags,foodBins,miniRack,milkSpouts,vesselHeight,finishSources,citrusPress,isSyrup,syrupKeys} from './station-layout.ts'
 import {filterSockets,filterPose,filterTexture} from './filter-pose.ts'
+import {isLayer,transformLayer,type LayerMap,type LayerRect,type PreviewState} from './layer-overrides.ts'
 import {drinkLook,surfaceNames,vessel} from './drink-look.ts'
 type Rect={x:number;y:number;w:number;h:number;file?:string}
 type Cycle={start:number;end:number}
@@ -41,7 +42,25 @@ export async function workstation(canvas:HTMLCanvasElement){
   if(!sprite)throw Error('Missing pour tool '+spec.key)
   return [spec.key,sprite] as const
  }))
- function image(k:string,x:number,y:number,w:number,h:number){const im=textures.get(k);if(im)ctx.drawImage(im,x,y,w,h)}
+ let preview: {map:LayerMap;selected:string;state:PreviewState}|null=null
+ function layer(id:string,x:number,y:number,w:number,h:number,paint:()=>void){
+  const rect:LayerRect={x,y,w,h}
+  if(!preview||!isLayer(id)){paint();return}
+  transformLayer(ctx,rect,preview.map[id],()=>{
+   paint()
+   if(preview?.selected===id){ctx.save();ctx.strokeStyle='#7df5c5';ctx.lineWidth=3;ctx.setLineDash([8,5]);ctx.strokeRect(x,y,w,h);ctx.restore()}
+  })
+ }
+ function image(k:string,x:number,y:number,w:number,h:number){
+  if(k==='china-rack-single'){
+   const im=textures.get('china-rack');if(im)ctx.drawImage(im,0,0,im.width,im.height*.53,x,y,w,h);return
+  }
+  const im=textures.get(k);if(im)ctx.drawImage(im,x,y,w,h)
+ }
+ function lockImage(key:string,x:number,y:number){
+  // Foreshorten toward the viewer and rotate around the group socket, never the tip.
+  ctx.save();ctx.translate(x,y);ctx.rotate(.20);ctx.scale(1,.62);image(key,-76,-12,152,92);ctx.restore()
+ }
  function prop(k:string,x:number,y:number,h:number,angle=0,alpha=1){
   const im=textures.get(k);if(!im)return
   const w=h*im.width/im.height;ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.globalAlpha=clamp(alpha);ctx.drawImage(im,-w/2,-h,w,h);ctx.restore()
@@ -50,7 +69,7 @@ export async function workstation(canvas:HTMLCanvasElement){
   const im=textures.get(key)!,w=im.width*h/im.height
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.drawImage(im,-w*94/435,-h*(key==='filter-inverted'||key==='filter-edge'?79:46)/203,w,h);ctx.restore()
  }
- function fixed(k:string,alpha=1){const r=rects[k];if(!r)return;ctx.save();ctx.globalAlpha=clamp(alpha);image('new-'+k,r.x,r.y,r.w,r.h);ctx.restore()}
+ function fixed(k:string,alpha=1){const r=rects[k];if(!r)return;layer(k.startsWith('fridge')||k.startsWith('microwave')?'':k,r.x,r.y,r.w,r.h,()=>{ctx.save();ctx.globalAlpha=clamp(alpha);image('new-'+k,r.x,r.y,r.w,r.h);ctx.restore()})}
  function stream(x:number,y:number,x2:number,y2:number,color:string){ctx.strokeStyle=color;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke()}
  function steam(x:number,y:number,t:number){ctx.save();for(let i=0;i<4;i++){const p=(t*.035+i*.25)%1;ctx.globalAlpha=Math.sin(Math.PI*p)*.58;ctx.strokeStyle='#fff9e4';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+i*4,y-35*p);ctx.bezierCurveTo(x-8+i*4,y-10-35*p,x+10+i*4,y-18-35*p,x+i*4,y-26-35*p);ctx.stroke()}ctx.restore()}
  function vapor(x:number,y:number,t:number,strength:number,down=false){
@@ -235,15 +254,16 @@ export async function workstation(canvas:HTMLCanvasElement){
    }
   }
   if(look.ice){
-   for(let i=0;i<3;i++){
-    const settled=phase(iceProgress,i*.18+.30,i*.18+.62)
+   const count=iceCubeCount(c.size==='Large'?2:1)
+   for(let i=0;i<count;i++){
+    const start=iceCubeStart(i,count),settled=phase(iceProgress,start+.30,start+.62)
     if(!old.ice&&settled<=0)continue
-    const height=Math.min(rx*.69,h*.20),ix=cx+[-.38,.03,.33][i]*rad
-    const rest=transparent?foot-height*(i===1?.28:0):rim+ry*.7
+    const height=Math.min(rx*.69,h*.20),ix=cx+[-.38,.03,.33][i%3]*rad
+    const rest=transparent?foot-height*(i%3===1?.28:0)-Math.floor(i/3)*height*.48:rim+ry*.7
     const wet=transparent?top+height*.68+(i%2)*ry*.22:top+height*.22
     const end=fill?Math.min(rest,wet):rest
-    const bounce=Math.sin(Math.PI*phase(iceProgress,i*.18+.62,i*.18+.80))*height*.09
-    prop('cube-'+(i+1),mix(cx,ix,settled),mix(rim,end,settled*settled)-bounce,height,(i-1)*.18+.26*(1-settled))
+    const bounce=Math.sin(Math.PI*phase(iceProgress,start+.62,start+.80))*height*.09
+    prop('cube-'+(i%3+1),mix(cx,ix,settled),mix(rim,end,settled*settled)-bounce,height,(i-1)*.18+.26*(1-settled))
    }
   }
   ctx.restore()
@@ -253,9 +273,10 @@ export async function workstation(canvas:HTMLCanvasElement){
    prop(cupArt(c),x,y,h);ctx.restore()
   }
  }
- let heldIce:{start:number;pointer:{x:number;y:number}|null}|null=null
- function beginIce(){if(heldIce)return false;heldIce={start:performance.now(),pointer:null};return true}
+ let heldIce:{start:number;pointer:{x:number;y:number}|null;portions:number}|null=null
+ function beginIce(){if(heldIce)return false;heldIce={start:performance.now(),pointer:null,portions:1};return true}
  function moveIce(x:number,y:number){if(heldIce)heldIce.pointer={x,y}}
+ function setIcePortions(portions:number){if(heldIce)heldIce.portions=portions}
  function stopIce(){heldIce=null}
  function releaseIce(game:Bench,slot:number){
   if(!heldIce||gatherAge()<130)return
@@ -287,14 +308,15 @@ export async function workstation(canvas:HTMLCanvasElement){
   drawMilkPitcher(ctx,milkArt,texture,x,y,h,angle,level,work,time)
  }
  const renderHot=makeHotAppliance({context:()=>ctx,textures,prop})
- const hotAppliance=(g:Bench,t:number,station:'oven'|'press',x:number,y:number,w:number,h:number)=>renderHot(g,t,station,x,y,w,h,lifting)
+ const hotAppliance=(g:Bench,t:number,station:'oven'|'press',x:number,y:number,w:number,h:number)=>{const front=x===frontHot[station].x;layer((front?'front/':'rear/')+station,x,y,w,h,()=>{const paint=()=>renderHot(g,t,station,x,y,w,h,lifting);if(front&&station==='press')frontPressPerspective(ctx,paint);else paint()})}
  let lifting:Carry|null=null
  function frontBrewers(g:Bench,t:number){
-  image('brew-plinth',22,398,479,25)
+  layer('brew-plinth',22,398,479,25,()=>image('brew-plinth',22,398,479,25))
   for(const key of ['tea','blend'] as const){
    const tea=key==='tea',frame=frontGalley[key],job=tea?g.brew:g.blend,ready=tea?g.teaReady:g.blendReady
    const atlas=tea?'urn':'blend',h=frame.h,w=tea?h*172/250:h*129/235
    const x=frame.x-w/2+(job&&!tea?Math.sin(t*2.1)*.85:0),y=frame.y-h/2
+   layer(tea?'tea-brewer':'blender',x,y,w,h,()=>{
    image(atlas+'-empty',x,y,w,h)
    const amount=ready?1:progress(t,job)
    if(amount>0){
@@ -302,6 +324,7 @@ export async function workstation(canvas:HTMLCanvasElement){
     ctx.save();ctx.beginPath();ctx.rect(x,line,w,bottom-line);ctx.clip();image(atlas+'-full',x,y,w,h);ctx.restore()
    }
    if(tea&&job)vapor(frame.x-4,y+16,t,.72)
+   })
   }
  }
  function front(g:Bench,end:End,t:number,selectedHead:number){
@@ -320,11 +343,15 @@ export async function workstation(canvas:HTMLCanvasElement){
    ctx.beginPath();ctx.arc(255,330,11.5,0,Math.PI*2);ctx.stroke()
    ctx.strokeStyle='#f1c26e';ctx.beginPath();ctx.arc(255,330,11.5,-Math.PI/2,-Math.PI/2+2*Math.PI*fraction);ctx.stroke();ctx.restore()
   }
-  beanBags.forEach((bag,i)=>{if(g.bagCounts[i]&&!(lifting?.kind==='beans'&&lifting.bag===i))prop(bag.key,bag.x,165,96)})
+  beanBags.forEach((bag,i)=>layer(bag.key,bag.x-40,bag.y-bag.h,80,bag.h,()=>{
+   if(!g.bagCounts[i]||lifting?.kind==='beans'&&lifting.bag===i)return
+   ctx.save();ctx.fillStyle='rgba(52,29,12,.35)';ctx.beginPath();ctx.ellipse(bag.x,162,28,3,0,0,Math.PI*2);ctx.fill();ctx.restore()
+   prop(bag.key,bag.x,bag.y,bag.h)
+  }))
   image('hot-spigot',459,486,30,56)
   for(const [h,group] of g.groups.entries()){
    brewGroup(ctx,image,group,h,t,h===selectedHead)
-   if(g.basket==='mounted'||g.serviceHead!==h)image('lock-8',filterSockets[h]-76,502,152,92)
+   if(g.basket==='mounted'||g.serviceHead!==h)layer('filter/'+h,filterSockets[h]-44,502,88,70,()=>lockImage('lock-8',filterSockets[h],514))
    if(group.flush){stream(heads[h],520,heads[h],576,'#d8e8e1');vapor(heads[h],531,t,1.15,true)}
    const run=group.extraction
    for(let lane=0;lane<group.pots.length;lane++){
@@ -339,7 +366,8 @@ export async function workstation(canvas:HTMLCanvasElement){
   const basket=g.basket,pose=filterPose(g,t),job=progress(t,g.basketCycle)
   if(basket!=='mounted'&&lifting?.kind!=='handle'){
    const h=basket==='dosed'||basket==='grinding'?47:49
-   if(pose.lock!==null)image('lock-'+pose.lock,pose.x-76,pose.y-12,152,92)
+   layer('loose-filter',pose.x-32,pose.y-16,112,65,()=>{
+   if(pose.lock!==null)lockImage('lock-'+pose.lock,pose.x,pose.y)
    else{
     const flip=basket==='knocking'&&job>.18&&job<.78
     const key=flip?(job<.31||job>.67?'filter-edge':'filter-inverted'):filterTexture(g)
@@ -348,12 +376,13 @@ export async function workstation(canvas:HTMLCanvasElement){
     if(basket==='dosed'||basket==='grinding'||g.assistedService&&basket==='emptyHeld')image('grinder-fork-front',227,386,56,25)
    }
    if(basket==='knocking'&&job>.43&&job<.78)prop('puck',80,686+24*((job-.43)/.35)**2,17,job)
+   })
   }
   if(lifting?.kind!=='tamper'){
    const approach=basket==='tamping'?Math.min(1,job/.4,(1-job)/.36):0
    const x=mix(360,304,approach),y=mix(701,715,approach)-18*Math.sin(Math.PI*approach)
    const im=textures.get('new-tamper')!,w=49*im.width/im.height
-   image('new-tamper',x-w/2,y-49*.93,w,49)
+   layer('tamper',x-w/2,y-49*.93,w,49,()=>image('new-tamper',x-w/2,y-49*.93,w,49))
   }
   for(const texture of ['silky','airy'] as const){
    const job=g.steamJobs[texture],pt=milkSpouts[texture],ingredient=texture==='silky'?'milk':'foam'
@@ -361,28 +390,43 @@ export async function workstation(canvas:HTMLCanvasElement){
    const level=(g.textures[texture]+(job?job.amount*milkCycle(texture,work).charge:0))/g.data.capacity.milkBatch
    const present=!g.pouringFrom(ingredient)&&!(lifting?.kind==='add'&&lifting.add===ingredient)
    const port={x:texture==='silky'?1167:1207,y:295}
-   drawSteamLane(ctx,milkArt,texture,pt,port,level,work,t,present)
+   layer('milk/'+texture,pt.x-25,295,50,82,()=>drawSteamLane(ctx,milkArt,texture,pt,port,level,work,t,present))
   }
-  drawColdStation(ctx,g,t,k=>textures.get(k)!,fixed,prop)
+  layer('fridge',1450,231,211,152,()=>drawColdStation(ctx,g,t,k=>textures.get(k)!,fixed,prop))
 
-  fixed('pastry-bin');fixed('panini-bin')
-  for(const kind of ['raw','panino'] as const){
-   const held= lifting?.kind==='supply'&&lifting.station===(kind==='raw'?'oven':'press')
-   const count=3-Math.min(3,g.foodFlights.filter(f=>f.food===kind).length+Number(held))
-   for(let i=0;i<count;i++)prop(kind,(kind==='raw'?1488:1578)+i*24,(kind==='raw'?241:221)-i*5,17)
-  }
-  fixed('pastry-bin-lip');fixed('panini-bin-lip')
+  layer('mini-rack',1456,175,196,79,()=>{
+   // One continuous brass-edged wooden foot visually joins the four bins.
+   ctx.save();ctx.fillStyle='#6b3d22';ctx.strokeStyle='#bf955d';ctx.lineWidth=1.7;ctx.beginPath();ctx.moveTo(1457,245);ctx.lineTo(1652,205);ctx.lineTo(1652,214);ctx.lineTo(1457,254);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()
+   for(const seat of miniRack){
+    const {x,y,food}=seat
+    image('new-pastry-bin',x-26,y-40,52,40)
+    if(food){
+     const held=lifting?.kind==='supply'&&lifting.station===(food==='raw'?'oven':'press')
+     const count=preview?.selected==='mini-rack'&&preview.state==='empty'?0:preview?.selected==='mini-rack'&&preview.state==='working'?1:2-Math.min(2,g.foodFlights.filter(f=>f.food===food).length+Number(held))
+     for(let n=0;n<count;n++)prop(food,x-10+n*18,y-9-n*4,17)
+    }
+    image('new-pastry-bin-lip',x-26,y-40,52,40)
+   }
+  })
   const carton=finishSources.coldmilk
-  if(g.milkReserve&&!(lifting?.kind==='add'&&lifting.add==='coldmilk')&&!g.pouringFrom('coldmilk'))prop('new-milk-carton',carton.x,carton.y,carton.h)
+  layer('cold-milk',carton.x-30,carton.y-carton.h,60,carton.h,()=>{if(g.milkReserve&&!(lifting?.kind==='add'&&lifting.add==='coldmilk')&&!g.pouringFrom('coldmilk'))prop('new-milk-carton',carton.x,carton.y,carton.h)})
+  // Dedicated brass-edged syrup rail, layered over the existing shelf only.
+  layer('syrup-shelf',1429,482,236,46,()=>{
+   ctx.save();ctx.fillStyle='#523020';ctx.strokeStyle='#d6b17a';ctx.lineWidth=2
+   ctx.beginPath();ctx.moveTo(1430,482);ctx.lineTo(1665,520);ctx.lineTo(1665,528);ctx.lineTo(1430,490);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()
+  })
   for(const key of syrupKeys){
    const {x,y,h}=finishSources[key],im=textures.get(key)!,w=h*im.width/im.height
-   const job=g.pours.find(j=>j.action===key),travel=job?Math.sin(Math.PI*phase(progress(t,job),.3,.72)):0
+   const job=g.pours.find(j=>j.action===key),travel=preview?.selected==='syrup/'+key&&preview.state==='working'?1:job?Math.sin(Math.PI*phase(progress(t,job),.3,.72)):0
    const cut=Math.round(im.height*.26),headH=h*cut/im.height
+   layer('syrup/'+key,x-w/2,y-h,w,h,()=>{
    ctx.drawImage(im,0,cut,im.width,im.height-cut,x-w/2,y-h+headH,w,h-headH)
    ctx.drawImage(im,0,0,im.width,cut,x-w/2,y-h+travel*5,w,headH)
+   })
   }
   const citrus=citrusPress,jug=citrus.carafe,work=g.citrus?progress(t,g.citrus):0
-  prop('citrus-press',citrus.x,citrus.y,citrus.h)
+  layer('citrus',citrus.x-45,citrus.y-citrus.h,90,citrus.h,()=>{
+  ctx.save();ctx.shadowColor='rgba(27,12,5,.7)';ctx.shadowBlur=6;ctx.shadowOffsetY=4;prop('citrus-press',citrus.x,citrus.y,citrus.h);ctx.restore()
   if(g.citrus){
    const cx=citrus.x-2,cy=citrus.y-citrus.h*.88+Math.sin(t)*.9
    ctx.save();ctx.translate(cx,cy);ctx.rotate(Math.sin(t*.9)*.08)
@@ -395,13 +439,16 @@ export async function workstation(canvas:HTMLCanvasElement){
    const filled=g.citrus?Math.max(work,g.orangeStock/g.data.capacity.citrus):g.orangeStock/g.data.capacity.citrus
    if(filled){ctx.save();ctx.beginPath();ctx.rect(jug.x-32,jug.y-jug.h*(.15+.85*filled),64,jug.h);ctx.clip();prop('orange-carafe',jug.x,jug.y,jug.h);ctx.restore()}
   }
+  })
   for(const station of ['oven','press'] as const){
    const box=frontHot[station]
    hotAppliance(g,t,station,box.x,box.y,box.w,box.h)
   }
-  fixed(g.microReady?'microwave-open':'microwave');if(g.microReady)prop('baked',1180,539,26)
-  iceWell(ctx,prop,g.ice-(heldIce&&gatherAge()>155?1:0),g.data.capacity.ice)
-  if(!heldIce&&!g.pouringFrom('ice'))prop('scoop-empty',1446,703,38,-.15)
+  layer('microwave',1112,440,134,126,()=>{fixed(g.microReady?'microwave-open':'microwave');if(g.microReady)prop('baked',1180,539,26)})
+  layer('ice',1218,635,261,82,()=>{
+   iceWell(ctx,prop,g.ice-(heldIce&&gatherAge()>155?Math.min(g.ice,heldIce.portions):0),g.data.capacity.ice)
+   if(!heldIce&&!g.pouringFrom('ice'))prop('scoop-empty',1446,703,38,-.15)
+  })
   if(!g.kitchen){
    const bin=servicePass.carafes
    image('service-well',bin.x,bin.y,bin.w*.49,bin.h)
@@ -409,34 +456,41 @@ export async function workstation(canvas:HTMLCanvasElement){
    if(g.teaStock&&!(lifting?.kind==='add'&&lifting.add==='tea'))prop('tea-carafe',1497,831,64)
    if(g.blendStock&&!(lifting?.kind==='add'&&lifting.add==='cold'))prop('blend-carafe',1595,833,68)
   }
-  drawCupRacks(ctx,image,prop,g,lifting)
+  drawCupRacks(ctx,image,prop,g,lifting,layer)
   drawWastePress(ctx,image,prop,g,t,404,748,142,193)
   const {pesto,brownie}=frontGalley
   if(lifting?.kind!=='pesto')prop('pesto',pesto.x,pesto.y+30,55)
   image('old-plate',brownie.x-46,brownie.y+9,92,22)
   prop('brownie',brownie.x-13,brownie.y+20,31,-.045)
   prop('brownie',brownie.x+12,brownie.y+23,32,.07)
-  for(const bay of [servicePass.shots,servicePass.panini,servicePass.pastries]){
-   const {x,y,w,h}=bay.well
-   image('service-well',x,y,w,h)
-  }
-  for(const [i,stored] of g.shotReserve.entries()){
-   const seat=pocketSeat('shots',i)
-   ctx.save();ctx.fillStyle='rgba(42,30,23,.65)';ctx.strokeStyle='#d3b789';ctx.lineWidth=1.15
-   ctx.beginPath();ctx.ellipse(seat.x,seat.y-1,15,5.2,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore()
-   if(!stored||lifting?.kind==='pot'&&lifting.head===reserveHead&&lifting.lane===i)continue
-   const job=g.stagedShotMotion.get(i),p=job?progress(t,job):1
-   const from=job?brewPoint(job.head,job.lane):seat
-   shotGlass(ctx,image,mix(from.x,seat.x,p),mix(from.y,seat.y,p)-Math.sin(Math.PI*p)*31,
-    mix(glassHeight,glassHeight*.88,p),0,doseVolume(stored),stored)
-  }
+  const shots=servicePass.shots.well
+  layer('shot-reserve',shots.x,shots.y,shots.w,shots.h,()=>{
+   image('service-well',shots.x,shots.y,shots.w,shots.h)
+   for(const [i,stored] of g.shotReserve.entries()){
+    const seat=pocketSeat('shots',i)
+    ctx.save();ctx.fillStyle='rgba(42,30,23,.65)';ctx.strokeStyle='#d3b789';ctx.lineWidth=1.15
+    ctx.beginPath();ctx.ellipse(seat.x,seat.y-1,15,5.2,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore()
+    if(!stored||lifting?.kind==='pot'&&lifting.head===reserveHead&&lifting.lane===i)continue
+    const job=g.stagedShotMotion.get(i),p=job?progress(t,job):1
+    const from=job?brewPoint(job.head,job.lane):seat
+    shotGlass(ctx,image,mix(from.x,seat.x,p),mix(from.y,seat.y,p)-Math.sin(Math.PI*p)*31,mix(glassHeight,glassHeight*.88,p),0,doseVolume(stored),stored)
+   }
+  })
   const outputs=g.foodOutputs
-  for(let slot=0;slot<g.towel.length+g.foodReserve.length;slot++){
+  const stagedFood=(slot:number)=>{
    const food=g.foodAt(slot),seat=frontFoodSeat(slot,g.towel.length)
-   if(!food||outputs.some(j=>j.towelSlot===slot)||lifting?.kind==='food'&&lifting.slot===slot)continue
+   if(!food||outputs.some(j=>j.towelSlot===slot)||lifting?.kind==='food'&&lifting.slot===slot)return
    if(slot<g.towel.length)image('old-plate',seat.x-32,seat.y-12,64,17)
    prop(food.food==='pesto'?'grilled-pesto':food.food,seat.x,seat.y,seat.h)
   }
+  for(const section of ['panini','pastries'] as const){
+   const bay=servicePass[section],r=bay.well,first=g.towel.length+(section==='panini'?0:servicePass.panini.capacity)
+   layer(section==='panini'?'panini-reserve':'pastry-reserve',r.x,r.y,r.w,r.h,()=>{
+    image('service-well',r.x,r.y,r.w,r.h)
+    for(let i=0;i<bay.capacity;i++)stagedFood(first+i)
+   })
+  }
+  for(let i=0;i<g.towel.length;i++)stagedFood(i)
   for(let i=0;i<g.cups.length;i++){
    const x=cupsX[i],c=g.cups[i];prop('old-plate',x,674,24)
    if(!c||lifting?.kind==='cup'&&lifting.slot===i)continue;const h=vesselHeight(c.cup,c.size)
@@ -468,11 +522,12 @@ export async function workstation(canvas:HTMLCanvasElement){
    const pose=pourPose(a,p,transit.head??0,transit.lane??0,{x:cx,y:rim},toolIm.width/toolIm.height,matches?release:undefined)
    drink(visual,x,stageCupY,h,c,amount,a==='ice'?iceProgress:1)
    if(a==='ice'){
-    scoopWithIce(ctx,prop,pose.x,pose.y,pose.h,pose.angle,matches?1:phase(p,.055,.145),iceProgress)
+    const portions=icePortions(c.size,g.data.capacity.largePortions),count=iceCubeCount(portions)
+    scoopWithIce(ctx,prop,pose.x,pose.y,pose.h,pose.angle,matches?1:phase(p,.055,.145),iceProgress,portions)
     const cubeHeight=Math.min(w*shape.rx*.69,h*.20)
-    for(let j=0;j<3;j++){
-     const drop=phase(iceProgress,j*.18,j*.18+.30)
-     if(drop>0&&drop<1)prop('cube-'+(j+1),mix(pose.lip.x,cx,drop)+Math.sin(Math.PI*drop)*(j-1)*3,mix(pose.lip.y,rim,drop*drop),cubeHeight,(j-1)*drop*.23)
+    for(let j=0;j<count;j++){
+     const start=iceCubeStart(j,count),drop=phase(iceProgress,start,start+.30)
+     if(drop>0&&drop<1)prop('cube-'+(j%3+1),mix(pose.lip.x,cx,drop)+Math.sin(Math.PI*drop)*(j-1)*3,mix(pose.lip.y,rim,drop*drop),cubeHeight,(j-1)*drop*.23)
     }
    }else{
     if(a==='milk'||a==='foam'){
@@ -488,12 +543,12 @@ export async function workstation(canvas:HTMLCanvasElement){
   }
   for(const job of g.foodFlights){
    const station=job.food==='raw'?'oven':'press',start=foodBins[job.food],p=progress(t,job)
-   const slots=station==='oven'?g.ovenSlots:g.pressSlots,end=rackPosition(station,job.slot,slots.length,frontHot[station])
+   const slots=station==='oven'?g.ovenSlots:g.pressSlots,rawEnd=rackPosition(station,job.slot,slots.length,frontHot[station]),end=station==='press'?{...rawEnd,...frontPressPoint(rawEnd.x,rawEnd.y)}:rawEnd
    prop(job.food==='panino'&&slots[job.slot].pesto?'panino-pesto':job.food,mix(start.x,end.x,p),mix(start.y,end.y,p)-Math.sin(p*Math.PI)*60,mix(17,end.h,p),Math.sin(p*Math.PI)*.18)
   }
   for(const job of g.foodOutputs){
    if(lifting?.kind==='food'&&lifting.slot===job.towelSlot||t>=job.end)continue
-   const slots=job.station==='oven'?g.ovenSlots:g.pressSlots,start=rackPosition(job.station,job.slot,slots.length,frontHot[job.station])
+   const slots=job.station==='oven'?g.ovenSlots:g.pressSlots,rawStart=rackPosition(job.station,job.slot,slots.length,frontHot[job.station]),start=job.station==='press'?{...rawStart,...frontPressPoint(rawStart.x,rawStart.y)}:rawStart
    const p=progress(t,job)
    const end=frontFoodSeat(job.towelSlot,g.towel.length)
    prop(job.food==='pesto'?'grilled-pesto':job.food,mix(start.x,end.x,p),mix(start.y,end.y,p)-Math.sin(Math.PI*p)*41,mix(start.h,end.h,p),Math.sin(Math.PI*p)*-.13)
@@ -506,14 +561,14 @@ export async function workstation(canvas:HTMLCanvasElement){
   }
   if(heldIce){
    const p=scoopPose(gatherAge(),heldIce.pointer)
-   scoopWithIce(ctx,prop,p.x,p.y,38,p.angle,p.load,0)
+   scoopWithIce(ctx,prop,p.x,p.y,38,p.angle,p.load,0,heldIce.portions)
   }
  }
  function kitchen(g:Bench,t:number){
   drawRearKitchen(g,t,lifting,{ctx,image,prop,vapor,appliance:hotAppliance})
  }
  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)')
- const draw=(g:Bench,frac:number,selectedHead:number,visible:Rect,held:Carry|null=null,swipe:Slide|null=null)=>{lifting=held;const t=g.tick+frac,sx=canvas.width/visible.w,sy=canvas.height/visible.h
+ const draw=(g:Bench,frac:number,selectedHead:number,visible:Rect,held:Carry|null=null,swipe:Slide|null=null,layerPreview:{map:LayerMap;selected:string;state:PreviewState}|null=null)=>{preview=layerPreview;lifting=held;const t=g.tick+frac,sx=canvas.width/visible.w,sy=canvas.height/visible.h
   ctx.setTransform(sx,0,0,sy,-visible.x*sx,-visible.y*sy);ctx.fillStyle='#332b22';ctx.fillRect(0,0,stage.w,stage.h)
   const view=(v:End|'Kitchen')=>v==='Kitchen'?kitchen(g,t):front(g,v,t,selectedHead)
   const destination=g.turn?.to??swipe?.to
@@ -588,5 +643,5 @@ export async function workstation(canvas:HTMLCanvasElement){
   shotGlass(pen,(_key,x,y,w,h)=>pen.drawImage(glass,x,y,w,h),64,98,96,0,doseVolume(shot),shot)
   return art
  }
- return {shotIcon,draw,overhead,carried,releaseIngredient,beginIce,moveIce,stopIce,releaseIce}
+ return {shotIcon,draw,overhead,carried,releaseIngredient,beginIce,moveIce,setIcePortions,stopIce,releaseIce}
 }

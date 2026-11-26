@@ -58,10 +58,10 @@ test('cups never auto-pour; a pitcher transfers only on an explicit tap or drag 
 })
 test('served dish returns, loads, washes offscreen and replenishes the correct ceramic once',()=>{
  const g=create();prepare(g,'latte');g.command({action:'guest',guest:0});assert.equal(g.served,1)
- assert.equal(g.stock.glass,2);run(g,cfg.stations.dishReturn);to(g,'Kitchen')
+ assert.equal(g.stock.glass,cfg.capacity.ceramic-1);run(g,cfg.stations.dishReturn);to(g,'Kitchen')
  g.command({action:'washLoad'});assert.deepEqual(g.washRack,['glass']);g.command({action:'washRun'})
- to(g,'Window');run(g,cfg.stations.wash);assert.equal(g.washed,true);assert.equal(g.stock.glass,2)
- to(g,'Kitchen');g.command({action:'washRun'});g.command({action:'washRun'});assert.equal(g.stock.glass,3);assert.equal(g.dirty.length,0)
+ to(g,'Window');run(g,cfg.stations.wash);assert.equal(g.washed,true);assert.equal(g.stock.glass,cfg.capacity.ceramic-1)
+ to(g,'Kitchen');g.command({action:'washRun'});g.command({action:'washRun'});assert.equal(g.stock.glass,cfg.capacity.ceramic);assert.equal(g.dirty.length,0)
 })
 test('drag disposal uses its source slot and disposable reserve is finite and size-specific',()=>{
  const g=create();cup(g,'demi');for(let i=0;i<cfg.capacity.takeaway;i++){
@@ -194,13 +194,13 @@ test('campaign levels have deterministic order queues and equipment upgrades spe
 })
 test('explicit drops preserve saucer, ingredient and inventory identity',()=>{
  const g=create();g.command({action:'steam'});g.command({action:'cup',cup:'glass',slot:1})
- g.command({action:'cup',cup:'mug',slot:1});assert.equal(g.stock.mug,3);assert.equal(g.cups[0],null)
+ g.command({action:'cup',cup:'mug',slot:1});assert.equal(g.stock.mug,cfg.capacity.ceramic);assert.equal(g.cups[0],null)
  pull(g,'standard');g.command({action:'cup',cup:'mug',slot:0});run(g,4)
  g.command({action:'add',add:'milk',slot:8});assert.equal(g.milk,cfg.capacity.milkBatch);assert.equal(Boolean(g.pour),false)
  g.command({action:'add',add:'milk',slot:1});assert.equal(g.pour?.slot,1);run(g,1)
  g.command({action:'returnCup',cup:'glass',size:'Medium',slot:1});assert.equal(g.recipe(g.cups[1]),'latte')
  g.command({action:'returnCup',cup:'glass',size:'Medium',slot:0});assert.ok(g.cups[0])
- g.command({action:'returnCup',cup:'mug',size:'Medium',slot:0});assert.equal(g.cups[0],null);assert.equal(g.stock.mug,3)
+ g.command({action:'returnCup',cup:'mug',size:'Medium',slot:0});assert.equal(g.cups[0],null);assert.equal(g.stock.mug,cfg.capacity.ceramic)
 })
 test('only untouched brownies go back to the food station',()=>{
  const g=create();to(g,'Kitchen');g.command({action:'brownie'});g.command({action:'returnBrownie',slot:0})

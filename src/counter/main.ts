@@ -1,19 +1,24 @@
 import {servicePass,reserveHead,chooseShotPocket} from './service-pass.ts'
-import {lidSeats} from './cup-rack.ts'
+import {lidSeats,holderTouch} from './cup-rack.ts'
 import {machineControl} from './machine-control.ts'
 import './style.css'
 import {dropTarget} from './drop-target.ts'
 import {canDrop} from './drop-eligibility.ts'
-import {milkTouch,syrupTouch,saucerTouch,towelTouch,shotRackBezelTouch,shotPocketTouch,foodWellTouch,shotKeyTouch,portafilterTouch,applianceTouch,frontSupplyTouch} from './touch-layout.ts'
+import {milkTouch,syrupTouch,saucerTouch,towelTouch,shotRackBezelTouch,shotPocketTouch,foodWellTouch,shotKeyTouch,portafilterTouch,applianceTouch,frontSupplyTouch,citrusTouch} from './touch-layout.ts'
 import {counterTravel} from './counter-travel.ts'
 import {cancelOwnedPointer} from './gesture-ownership.ts'
 import {frontGalley} from './galley-layout.ts'
 import {filterPose} from './filter-pose.ts'
 import {recipeGuide} from './recipe-guide.ts'
+import {bindImmersive} from './immersive.ts'
+import {visibleStage,viewportMoved,type ViewRect} from './viewport-fit.ts'
 import {Bench,stockKey,takeCup,type Config,type End,type Input,type Add,type Size,type Drink} from './bench.ts'
 import {breakfastName,piazzaShift,piazzaName,lunchName,lunchShift,shiftName,levelConfig,levels,upgrades,loadProgress,saveProgress,buyUpgrade,completeLevel} from './campaign.ts'
 import {workstation} from './scene.ts'
-import {heads,holders,serveX,brewPoint,ounces,stage,beanBags,type Carry,fridge,finishSources,syrupKeys,citrusPress} from './station-layout.ts'
+import {layerTuner} from './layer-tuner.ts'
+import {previewBench} from './layer-overrides.ts'
+import {icePortions} from './ice-service.ts'
+import {heads,holders,serveX,brewPoint,ounces,stage,beanBags,type Carry,fridge,finishSources,syrupKeys} from './station-layout.ts'
 import {frontHot} from './hot-appliance.ts'
 import {rear,rearFood,rearOven,rearPress} from './rear-layout.ts'
 import {FixedClock} from '../sim/clock.ts'
@@ -37,25 +42,35 @@ async function open(){
  try{assist=localStorage.getItem('via-bianca-controls')==='on'}catch{}
  function layout(){
   el('app').dataset.rail=bookOpen||assist?'open':'closed'
+  el('app').dataset.railKind=bookOpen?'recipes':assist?'controls':'none'
   el('control-rail').hidden=!assist||bookOpen;el('recipe-rail').hidden=!bookOpen
   el('recipes').setAttribute('aria-expanded',String(bookOpen))
   if(bookOpen)guide.update(g)
  }
- function toggleBook(open:boolean){if(open&&sound)music.unlock();bookOpen=open;hidePeek();layout()}
+ function toggleBook(open:boolean){if(open===bookOpen)return;cancelViewportGestures();if(open&&sound)music.unlock();bookOpen=open;layout()}
  const canvas=el<HTMLCanvasElement>('painting'),world=el('world'),surface=el('surface')
  let visible={x:0,y:0,w:stage.w,h:stage.h}
+ let tuningLayers=false
+ const tuner=layerTuner(()=>draw(g,0,head),()=>stopTuning())
+ let lastScene:ViewRect|null=null,lastFrame:ViewRect|null=null
  function sizeCanvas(){
   const scene=world.getBoundingClientRect(),frame=surface.getBoundingClientRect()
-  if(!scene.width||!scene.height)return
-  const scale=scene.width/stage.w,left=Math.max(scene.left,frame.left),top=Math.max(scene.top,frame.top)
-  const w=Math.max(1,Math.min(scene.right,frame.right)-left),h=Math.max(1,Math.min(scene.bottom,frame.bottom)-top)
-  visible={x:(left-scene.left)/scale,y:(top-scene.top)/scale,w:w/scale,h:h/scale}
+  if(!lastScene||!lastFrame){lastScene=scene;lastFrame=frame}
+  else if(viewportMoved(lastScene,scene)||viewportMoved(lastFrame,frame)){cancelViewportGestures();lastScene=scene;lastFrame=frame}
+  const region=visibleStage(scene,frame,stage);if(!region)return
+  const {width,height,...bounds}=region;visible=bounds
   Object.assign(canvas.style,{left:visible.x/stage.w*100+'%',top:visible.y/stage.h*100+'%',width:visible.w/stage.w*100+'%',height:visible.h/stage.h*100+'%'})
-  const density=Math.min(devicePixelRatio||1,1.75)
-  canvas.width=Math.round(w*density);canvas.height=Math.round(h*density)
+  const density=Math.min(devicePixelRatio||1,1.75),w=Math.max(1,Math.round(width*density)),h=Math.max(1,Math.round(height*density))
+  if(canvas.width!==w)canvas.width=w
+  if(canvas.height!==h)canvas.height=h
  }
  const travel=counterTravel(surface,()=>g.view,()=>!!drag||paused||!!g.turn||g.done,to=>act({action:'to',view:to}))
  const draw=(game:Bench,frac:number,group:number)=>{
+  if(tuningLayers){
+   const preview=previewBench(game,tuner.selected,tuner.state)
+   if(tuner.view!=='current'){preview.kitchen=tuner.view==='Kitchen';if(tuner.view!=='Kitchen')preview.end=tuner.view}
+   art.draw(preview,0,group,visible,null,null,{map:tuner.map,selected:tuner.selected,state:tuner.state});return
+  }
   art.draw(game,frac,group,visible,drag?.active?drag.carry:null,travel.frame(game.turn?.to))
   const target=document.getElementById('loose-handle')
   if(target){
@@ -63,7 +78,14 @@ async function open(){
    target.style.left=(pose.x-23)/stage.w*100+'%';target.style.top=(pose.y-13)/stage.h*100+'%'
   }
  }
- new ResizeObserver(()=>{sizeCanvas();draw(g,0,head)}).observe(world)
+ // Size and position can change on rotation, browser chrome, safe areas or a rail toggle.
+ const refreshViewport=()=>{sizeCanvas();draw(g,0,head)}
+ const viewportObserver=new ResizeObserver(refreshViewport)
+ viewportObserver.observe(world);viewportObserver.observe(surface)
+ window.addEventListener('resize',refreshViewport)
+ window.visualViewport?.addEventListener('resize',refreshViewport)
+ window.visualViewport?.addEventListener('scroll',refreshViewport)
+ document.addEventListener('fullscreenchange',refreshViewport)
  function pullAt(h:number,type:'short'|'standard'){
   head=h;const lane=g.freePitcher(h)
   if(lane<0){say('Both pitchers already hold a shot');return}
@@ -147,7 +169,7 @@ async function open(){
  function applyIngredient(add:Add,slot?:number){
   if(add==='ice'){
    if(slot===undefined&&!startScoop()){say(g.ice<=0?'Refill the ice well':'Scoop in use');return}
-   if(slot!==undefined)art.releaseIce(g,slot)
+   if(slot!==undefined){art.setIcePortions(icePortions(g.cups[slot]?.size??'Medium',cfg.capacity.largePortions));art.releaseIce(g,slot)}
   }
   if(slot===undefined){pick({kind:'add',add},cfg.finishes[add]);return}
   act({action:'dropPour',pour:{action:'add',add,slot}})
@@ -227,7 +249,7 @@ async function open(){
  app.addEventListener('focusin',e=>{const n=cupTarget(e);if(n?.matches(':focus-visible'))inspectCup(n)})
  app.addEventListener('focusout',e=>{if(cupTarget(e))hidePeek()})
  app.addEventListener('contextmenu',e=>{if(cupTarget(e))e.preventDefault()})
- app.addEventListener('pointerdown',e=>{if(drag||paused||g.turn||!e.isPrimary||e.button!==0)return;const n=(e.target as HTMLElement).closest<HTMLElement>('[data-carry]');if(!n)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,carry:JSON.parse(n.dataset.carry!),source:n,active:false};n.setPointerCapture(e.pointerId);held=false
+ app.addEventListener('pointerdown',e=>{if(e.isPrimary&&cancelledLayoutPointer!==null){cancelledLayoutPointer=null;skip=null}if(drag||paused||g.turn||!e.isPrimary||e.button!==0)return;const n=(e.target as HTMLElement).closest<HTMLElement>('[data-carry]');if(!n)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,carry:JSON.parse(n.dataset.carry!),source:n,active:false};n.setPointerCapture(e.pointerId);held=false
   if(drag.carry.kind==='add'&&drag.carry.add==='ice')startScoop()
   if(e.pointerType!=='mouse'&&cupTarget(e))holdTimer=window.setTimeout(()=>{if(drag&&!drag.active){held=true;inspectCup(n)}},340)
  })
@@ -238,9 +260,9 @@ async function open(){
   if(ice){const box=world.getBoundingClientRect();art.moveIce((e.clientX-box.left)*stage.w/box.width,(e.clientY-box.top)*stage.h/box.height)}
   const ghost=el('ghost');if(!drag.active){clearPick(ice);drag.active=true;const sprite=art.carried(drag.carry,g);const scale=world.getBoundingClientRect().width/stage.w;ghost.style.width=sprite.logicalWidth*scale+'px';ghost.style.height=sprite.logicalHeight*scale+'px';ghost.replaceChildren(sprite.canvas);ghost.hidden=ice;draw(g,0,head)}
   ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px'
-  const dest=dropTarget(drag.carry,e.clientX,e.clientY,e.pointerType==='mouse'?0:12,(item,dest)=>canDrop(g,item,dest));if(dest!==over){over?.classList.remove('drop-over');over=dest;over?.classList.add('drop-over')}
+  const dest=dropTarget(drag.carry,e.clientX,e.clientY,e.pointerType==='mouse'?0:12,(item,dest)=>canDrop(g,item,dest));if(ice){const slot=dest?.dataset.to?.startsWith('saucer/')?Number(dest.dataset.to.split('/')[1]):-1;art.setIcePortions(icePortions(g.cups[slot]?.size??'Medium',cfg.capacity.largePortions))}if(dest!==over){over?.classList.remove('drop-over');over=dest;over?.classList.add('drop-over')}
  })
- app.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;cancelHold();if(held){held=false;skip=drag.source;setTimeout(()=>{skip=null},400);hidePeek();endDrag();return}const d=drag,dest=dropTarget(d.carry,e.clientX,e.clientY,e.pointerType==='mouse'?0:12,(item,dest)=>canDrop(g,item,dest))?.dataset.to
+ app.addEventListener('pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;sizeCanvas();if(!drag){releaseLayoutPointer(e);return}cancelHold();if(held){held=false;skip=drag.source;setTimeout(()=>{skip=null},400);hidePeek();endDrag();return}const d=drag,dest=dropTarget(d.carry,e.clientX,e.clientY,e.pointerType==='mouse'?0:12,(item,dest)=>canDrop(g,item,dest))?.dataset.to
   endDrag()
   if(d.active){
    skip=d.source;setTimeout(()=>{skip=null},0)
@@ -254,6 +276,21 @@ async function open(){
    if(d.carry.kind==='add'&&d.carry.add==='ice')art.stopIce()
   }})
  function abortGesture(){art.stopIce();held=false;hidePeek();endDrag()}
+ // A layout change must not reinterpret an in-flight release against moved targets.
+ let cancelledLayoutPointer:number|null=null,cancelledNavPointer:number|null=null
+ function cancelViewportGestures(){
+  if(drag){cancelledLayoutPointer=drag.id;skip=drag.source;abortGesture()}else hidePeek()
+  if(navDrag){cancelledNavPointer=navDrag.id;cancelNav()}
+  travel.cancelForLayout()
+ }
+ function releaseLayoutPointer(e:PointerEvent){
+  if(e.pointerId===cancelledNavPointer){cancelledNavPointer=null;navSuppress=performance.now()+350}
+  if(e.pointerId!==cancelledLayoutPointer)return
+  cancelledLayoutPointer=null;const source=skip
+  setTimeout(()=>{if(skip===source&&cancelledLayoutPointer===null)skip=null},400)
+ }
+ window.addEventListener('pointerup',releaseLayoutPointer,true)
+ window.addEventListener('pointercancel',releaseLayoutPointer,true)
  app.addEventListener('pointercancel',e=>{cancelOwnedPointer(drag,e.pointerId,abortGesture)})
  app.addEventListener('lostpointercapture',e=>{cancelOwnedPointer(drag,e.pointerId,abortGesture)})
  window.addEventListener('blur',abortGesture)
@@ -330,7 +367,7 @@ async function open(){
 
  let hotKey=''
  function hotspots(){
-  const key=[g.binLoad,...g.shotReserve,...g.foodReserve.map(f=>f?.food),!!g.compacting,g.bags,...holders.map(b=>g.stock[stockKey(b.cup,b.size)]),g.view,!!g.steamJobs.silky,!!g.steamJobs.airy,g.milkTank,g.textures.airy,g.textures.silky,g.cups[g.selected]?.size,g.groups.map(v=>[v.dirty,!!v.flush,v.extraction?.shot,v.extraction?.lane,v.pulls]),!!g.pour,g.tick===0,!!g.fridgeDoor,!!g.milkRefill,!!g.turn,g.basket,g.serviceHead,g.selected,g.groups.map(h=>h.pots.join('-')).join('/'),g.cups.map(c=>c?.uid),g.towel.map(f=>f?.food),g.drawer,g.ice>0,g.teaStock,g.blendStock,g.orangeStock,!!g.citrus,g.teaReady,g.blendReady,g.warm,g.overbaked,g.ovenSlots.map(s=>g.hotUrgent(s)),g.pressSlots.map(s=>g.hotUrgent(s)),placingPesto,...g.ovenSlots.map(s=>s.state),...g.pressSlots.map(s=>s.state+Number(s.pesto))].join('|')
+  const key=[g.binLoad,...g.shotReserve,...g.foodReserve.map(f=>f?.food),!!g.compacting,g.bags,...holders.map(b=>g.stock[stockKey(b.cup,b.size)]),g.view,!!g.steamJobs.silky,!!g.steamJobs.airy,g.milkTank,g.textures.airy,g.textures.silky,g.cups[g.selected]?.size,g.groups.map(v=>[v.dirty,!!v.flush,v.extraction?.shot,v.extraction?.lane,v.pulls]),!!g.pour,g.tick===0,!!g.fridgeDoor,!!g.milkRefill,!!g.turn,g.basket,g.serviceHead,g.selected,g.groups.map(h=>h.pots.join('-')).join('/'),g.cups.map(c=>c?.uid),g.towel.map(f=>f?.food),g.drawer,g.ice,g.teaStock,g.blendStock,g.orangeStock,!!g.citrus,g.teaReady,g.blendReady,g.warm,g.overbaked,g.ovenSlots.map(s=>g.hotUrgent(s)),g.pressSlots.map(s=>g.hotUrgent(s)),placingPesto,...g.ovenSlots.map(s=>s.state),...g.pressSlots.map(s=>s.state+Number(s.pesto))].join('|')
   if(key===hotKey||drag)return;hotKey=key
   const target=el('targets');target.replaceChildren();if(g.turn)return
   function hit(name:string,x:number,y:number,w:number,h:number,fn:()=>void,carry?:Carry,dest?:string){
@@ -422,7 +459,7 @@ async function open(){
    const n=hit(label,b.x,b.y,b.w,b.h,action==='pesto'?updatePesto:()=>act({action}),key==='pesto'?{kind:'pesto'}:undefined,key==='brownie'?'brownie':undefined)
    if((key==='tea'&&g.teaReady)||(key==='blend'&&g.blendReady))n.append(tag('span','Collect','station-ready'))
   }
-  beanBags.forEach((bag,i)=>{const n=hit('Bean bag '+(i+1)+' · '+g.bagCounts[i],bag.x,138,85,104,()=>act({action:'beans',bag:i}),{kind:'beans',bag:i});n.disabled=!g.bagCounts[i];n.append(tag('span',String(g.bagCounts[i]),'stock-count'))})
+  beanBags.forEach((bag,i)=>{const n=hit('Bean bag '+(i+1)+' · '+g.bagCounts[i],bag.x,bag.y-bag.h/2,85,bag.h,()=>act({action:'beans',bag:i}),{kind:'beans',bag:i});n.disabled=!g.bagCounts[i];n.append(tag('span',String(g.bagCounts[i]),'stock-count'))})
   const grinderTarget=hit('Grinder',255,329,105,170,()=>{choose('Portafilter');g.assistedService?act({action:'grinderLever'}):g.basket==='dosed'?act({action:'dose'}):dock('grind')},g.basket==='dosed'&&!g.assistedService?{kind:'handle'}:undefined,'grinder')
   if(g.assistedService&&['emptyHeld','dosed'].includes(g.basket)){
    grinderTarget.classList.add('grinder-ready')
@@ -501,9 +538,10 @@ async function open(){
   const gauge=tag('span','Milk '+g.milkTank+' / '+cfg.capacity.milkTank,'tank-count')
   Object.assign(gauge.style,{left:1190/stage.w*100+'%',top:242/stage.h*100+'%'});target.append(gauge)
   for(const id of ['coldmilk',...syrupKeys] as const){const p=id==='coldmilk'?{...finishSources[id],y:finishSources[id].y-finishSources[id].h/2,w:58}:syrupTouch(id);hit(cfg.finishes[id],p.x,p.y,p.w,p.h,()=>applyIngredient(id),{kind:'add',add:id})}
-  const citrus=citrusPress, jug=citrus.carafe
-  hit('Run citrus press',citrus.x,citrus.y-citrus.h*.65,86,68,()=>act({action:'citrus'}))
-  const juice=hit('Pour fresh orange juice',jug.x,jug.y-18,79,37,()=>g.orangeStock?applyIngredient('orange'):act({action:'citrus'}),g.orangeStock?{kind:'add',add:'orange'}:undefined)
+  const citrus=citrusTouch()
+  const run=citrus.run,jug=citrus.juice
+  hit('Run citrus press',run.x,run.y,run.w,run.h,()=>act({action:'citrus'}))
+  const juice=hit('Pour fresh orange juice',jug.x,jug.y,jug.w,jug.h,()=>g.orangeStock?applyIngredient('orange'):act({action:'citrus'}),g.orangeStock?{kind:'add',add:'orange'}:undefined)
   if(g.orangeStock||g.citrus)juice.append(tag('span',g.citrus?'…':String(g.orangeStock),'stock-count'))
   hit('Milk fridge',fridge.x,fridge.y,fridge.w,fridge.h,()=>{choose('Drinks');act({action:'refillMilk'})})
   for(const kind of ['raw','panino'] as const){
@@ -513,12 +551,13 @@ async function open(){
   appliance('oven',frontHot.oven)
   hit('Microwave',1190,505,113,126,()=>{choose('Food');act({action:'heat'})})
   appliance('press',frontHot.press)
-  hit('Scoop ice',1348,673,245,69,()=>{choose('Drinks');if(!g.ice)act({action:'refillIce'});else applyIngredient('ice')},g.ice?{kind:'add',add:'ice'}:undefined)
+  const ice=hit(g.ice?'Scoop ice · '+g.ice+' / '+cfg.capacity.ice:'Refill ice well',1348,673,245,69,()=>{choose('Drinks');if(!g.ice)act({action:'refillIce'});else applyIngredient('ice')},g.ice?{kind:'add',add:'ice'}:undefined)
+  ice.append(tag('span',g.ice+' / '+cfg.capacity.ice,'stock-count ice-count'))
   for(const [i,b] of holders.entries()){
    const travel=takeCup(b.cup),key=stockKey(b.cup,b.size)
    const stock=g.stock[key],name=(travel?ounces(b.size)+' ':'')+cfg.cups[b.cup]
-   const hitHeight=travel?b.h+15:83
-   const n=hit(name,b.x,b.y-hitHeight/2,b.w,hitHeight,()=>{choose('Cups');fillCup(i)},stock>0&&(!g.drawer||!travel)?{kind:'holder',index:i}:undefined,'holder/'+i)
+   const bTouch=holderTouch(b)
+   const n=hit(name,bTouch.x,bTouch.y,bTouch.w,bTouch.h,()=>{choose('Cups');fillCup(i)},stock>0&&(!g.drawer||!travel)?{kind:'holder',index:i}:undefined,'holder/'+i)
    n.classList.add('cup-bin')
    n.setAttribute('aria-description',stock+' in rack'+(travel?', '+g.reserve[key]+' in reserve':''))
    n.title=name+' · '+stock+' in rack'
@@ -604,9 +643,17 @@ async function open(){
  function close(){dialog.close();paused=false;clock.reset();last=0;sync()}
  function reset(next:number){if(next>progress.unlocked)return;clearPick();checkSignature='';travel.clear();endDrag();offered=null;placingPesto=false;level=next;cfg=levelConfig(base,level,progress.ranks);g=new Bench(cfg,tuning);hidePeek();head=0;endShown=false;signature=hotKey='';ticketKey='reset';hintUntil=0;previousView=g.view;uiTick=-1;choose(g.kitchen?'Kitchen':'Espresso');close();draw(g,0,head)}
  function changeShift(next:number){if(g.started&&!g.done){show('switch',next);return}reset(next)}
+ function startTuning(){
+  if(g.done)return
+  cancelViewportGestures();clearPick();dialog.close();paused=true;tuningLayers=true
+  el('app').inert=true;el('world').classList.add('layer-preview');music.state(false);tuner.show();draw(g,0,head)
+ }
+ function stopTuning(){
+  tuningLayers=false;tuner.hide();el('app').inert=false;el('world').classList.remove('layer-preview');paused=false;clock.reset();last=0;sync();draw(g,0,head)
+ }
  function show(page:string,next=level){
   clearPick();hidePeek();endDrag();paused=true;music.score.set(sound&&!document.hidden?'menu':'silent');music.unlock();music.state(false);const s=el('sheet');s.replaceChildren()
-  const titles:Record<string,string>={menu:'Via Bianca',book:'Recipe book',shifts:'Shifts & equipment',result:shiftName(level),inspect:'Counter inspector',switch:'Leave this shift?'}
+  const titles:Record<string,string>={menu:'Via Bianca',book:'Recipe book',shifts:'Shifts & equipment',result:shiftName(level),inspect:'Counter inspector',switch:'Leave this shift?',immersive:'Play in full screen'}
   s.append(tag('h2',titles[page]))
   if(page==='menu'){
    const toggle=button('Workstation buttons · '+(assist?'On':'Off'),()=>{
@@ -614,8 +661,9 @@ async function open(){
     signature='';layout();renderControls();show('menu')
    })
    toggle.setAttribute('aria-pressed',String(assist))
-   s.append(tag('p','Drag a pitcher or ingredient onto a cup, or tap the source and then the cup. Tap a completed drink to serve a matching guest. Open Recipes to keep an order beside the counter.'),toggle,button('Recipes',()=>{close();toggleBook(true)}),button('Shifts & equipment',()=>show('shifts')),button('Inspector',()=>show('inspect')),button(sound?'Sound on':'Sound off',()=>{sound=!sound;show('menu')}))
+   s.append(tag('p','Drag a pitcher or ingredient onto a cup, or tap the source and then the cup. Tap a completed drink to serve a matching guest. Open Recipes to keep an order beside the counter.'),toggle,button('Recipes',()=>{close();toggleBook(true)}),button('Shifts & equipment',()=>show('shifts')),button('Inspector',()=>show('inspect')),button('Developer · Layer tuner',startTuning),button(sound?'Sound on':'Sound off',()=>{sound=!sound;show('menu')}))
   }
+  if(page==='immersive')s.append(tag('p','This browser did not enter full screen. On iPhone, open this page in Safari, use Share (or More → Share), choose Add to Home Screen, and enable Open as Web App if offered. Open Via Bianca from its new icon and rotate to landscape. This may hide Safari’s toolbars; system safe areas still apply.'))
   if(page==='inspect'){s.append(tag('pre',[cfg.seed+' seed · '+g.tick+' tick · '+g.view,...g.groups.map((v,h)=>'G'+(h+1)+' · '+v.pulls+' doses · A '+(v.pots[0]??'empty')+' / B '+(v.pots[1]??'empty')+' · '+(v.extraction?'pulling '+labelLane(v.extraction.lane):'idle')),'Oven · '+g.ovenSlots.map(s=>s.state).join(' / '),'Press · '+g.pressSlots.map(s=>s.state+(s.pesto?' pesto':'')).join(' / '),'Maintenance G'+(g.serviceHead+1)+' · '+g.basket,'Ice '+g.ice+' · beans '+g.beans+' · tank '+g.milkTank+' · silky '+g.milk+' · airy '+g.textures.airy+' · fridge '+g.milkReserve,'Coins '+g.coins+' · bank '+progress.bank+' · smiles '+g.smiles+' · waste '+g.waste+' · bin '+g.binLoad+'/'+cfg.capacity.bin,...g.guests.map((v,i)=>cfg.orders[i].name+' · '+cfg.orders[i].archetype+' · '+v.state+' · '+Math.ceil(v.left*cfg.tickMs/1000)+'s'),...g.events.slice(-4)].join('\n')))}
   if(page==='result'){
    const stars=tag('h3','★'.repeat(g.stars)+'☆'.repeat(3-g.stars),'receipt-stars')
@@ -640,7 +688,7 @@ async function open(){
  // The engraved strip is also a short-travel thumb selector on touch screens.
  const strip=el('area-switch')
  let navDrag:{id:number;x:number;moved:boolean}|null=null,navSuppress=0
- strip.addEventListener('pointerdown',e=>{if(!navDrag&&!drag&&e.isPrimary&&e.button===0&&!paused&&!g.turn)navDrag={id:e.pointerId,x:e.clientX,moved:false}})
+ strip.addEventListener('pointerdown',e=>{if(e.isPrimary&&cancelledNavPointer!==null){cancelledNavPointer=null;navSuppress=0}if(!navDrag&&!drag&&e.isPrimary&&e.button===0&&!paused&&!g.turn)navDrag={id:e.pointerId,x:e.clientX,moved:false}})
  strip.addEventListener('pointermove',e=>{
   if(navDrag?.id!==e.pointerId)return
   if(!navDrag.moved&&Math.abs(e.clientX-navDrag.x)<6)return
@@ -661,8 +709,9 @@ async function open(){
  strip.addEventListener('pointercancel',e=>{cancelOwnedPointer(navDrag,e.pointerId,cancelNav)})
  strip.addEventListener('lostpointercapture',e=>{cancelOwnedPointer(navDrag,e.pointerId,cancelNav)})
  strip.addEventListener('pointerleave',e=>{if(!navDrag?.moved)cancelOwnedPointer(navDrag,e.pointerId,cancelNav)})
- strip.addEventListener('click',e=>{if(performance.now()<navSuppress){e.preventDefault();e.stopImmediatePropagation()}},true)
+ strip.addEventListener('click',e=>{if(cancelledNavPointer!==null||performance.now()<navSuppress){e.preventDefault();e.stopImmediatePropagation()}},true)
  for(const v of ['Door','Window','Kitchen'] as const)el(v.toLowerCase()).onclick=()=>act({action:'to',view:v})
+ bindImmersive(el<HTMLButtonElement>('fullscreen'),()=>show('immersive'),()=>say('Could not exit full screen. Use your browser’s exit control.'))
  el('recipes').onclick=()=>toggleBook(!bookOpen);el('close-book').onclick=()=>toggleBook(false);el('shifts').onclick=()=>show('shifts');el('menu').onclick=()=>show('menu');dialog.oncancel=e=>{e.preventDefault();if(!g.done)close()}
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&!paused&&g.started)show('menu');if(document.hidden)music.score.set('silent');else sync()})
  let lastPaint=0

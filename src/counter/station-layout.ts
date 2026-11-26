@@ -8,16 +8,18 @@ export const serveX=[736,994]
 export const foodX=[951,1037]
 export type Holder={cup:Cup;size:Size;x:number;y:number;h:number;w:number}
 export const holders:Holder[]=[
- {cup:'demi',size:'Medium',x:80,y:843,h:87.75,w:110},{cup:'mug',size:'Medium',x:196,y:843,h:93.15,w:110},
- {cup:'glass',size:'Medium',x:103,y:928,h:87.75,w:164},{cup:'bowl',size:'Medium',x:310,y:843,h:70.2,w:110},{cup:'tall',size:'Medium',x:282,y:928,h:87.75,w:164},
+ {cup:'demi',size:'Medium',x:48,y:922,h:87.75,w:64},{cup:'mug',size:'Medium',x:118,y:922,h:93.15,w:64},
+ {cup:'glass',size:'Medium',x:188,y:922,h:87.75,w:64},{cup:'bowl',size:'Medium',x:258,y:922,h:70.2,w:64},{cup:'tall',size:'Medium',x:328,y:922,h:87.75,w:64},
  ...(['paper','clear'] as const).flatMap((cup,row)=>(['Small','Large'] as const).map((size,i)=>({cup,size,x:[656,744,918,1004][row*2+i],y:879,h:i?104.8:98,w:85})))
 ]
 export function vesselHeight(cup:Cup,size:Size){
  const h=holders.find(v=>v.cup===cup&&(v.size===size||cup!=='paper'&&cup!=='clear'))
  return h?.h??holders.find(v=>v.cup===cup)!.h
 }
-export const milkSpouts={silky:{x:1159,y:373},airy:{x:1214,y:369}}
-export const foodBins={raw:{x:1511,y:234},panino:{x:1605,y:220}}
+export const milkSpouts={silky:{x:1165,y:372},airy:{x:1220,y:372}}
+// Four visual compartments; only the two existing supply types are active.
+export const miniRack=[{x:1482,y:248,food:'raw'},{x:1530,y:238,food:null},{x:1578,y:228,food:null},{x:1626,y:218,food:'panino'}] as const
+export const foodBins={raw:{x:miniRack[0].x,y:miniRack[0].y-8},panino:{x:miniRack[3].x,y:miniRack[3].y-8}}
 export const fridge={x:1559,y:306,w:181,h:108}
 export const ounces=(size:Size)=>size==='Large'?'16 oz':'8 oz'
 export function cupArt(c:Drink){
@@ -31,10 +33,11 @@ export function cupArt(c:Drink){
 export const syrupKeys=['caramel','cocoa','vanilla','matcha','cherry'] as const
 export type Syrup=typeof syrupKeys[number]
 export function isSyrup(k:string):k is Syrup{return (syrupKeys as readonly string[]).includes(k)}
-export const citrusPress={x:1615,y:645,h:105,carafe:{x:1609,y:642,h:38}}
-export const finishSources={coldmilk:{x:1530,y:632,h:99},caramel:{x:1441,y:491,h:77},cocoa:{x:1492,y:497,h:78},vanilla:{x:1543,y:503,h:79},matcha:{x:1594,y:509,h:80},cherry:{x:1645,y:515,h:81}} as const
+export const citrusPress={x:1588,y:775,h:130,carafe:{x:1582,y:765,h:40}}
+export const finishSources={coldmilk:{x:1530,y:632,h:99},caramel:{x:1450,y:489,h:78},cocoa:{x:1499,y:497,h:78},vanilla:{x:1548,y:505,h:78},matcha:{x:1597,y:513,h:78},cherry:{x:1646,y:521,h:78}} as const
 
-export const beanBags=[{key:'bean-ivory',x:82},{key:'bean-umber',x:200},{key:'bean-charcoal',x:316},{key:'bean-teal',x:429}]
+// Seat opaque feet on y=162; compensate for each authored sprite's transparent tail.
+export const beanBags=[{key:'bean-ivory',x:82,y:171,h:96},{key:'bean-umber',x:200,y:171,h:96},{key:'bean-charcoal',x:316,y:171,h:96},{key:'bean-teal',x:429,y:174,h:96}]
 export type HotStation='press'|'oven'
 export type Carry={kind:'supply';station:HotStation}|{kind:'bakedSlot';station:HotStation;slot:number}|{kind:'pesto'}|{kind:'pot';head:number;lane:number}|{kind:'cup'|'food';slot:number}|{kind:'holder';index:number}|{kind:'add';add:import('./bench.ts').Add}|{kind:'handle'|'tamper'}|{kind:'beans';bag:number}
 export const stageCupY=669

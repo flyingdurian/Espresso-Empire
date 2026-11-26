@@ -1,0 +1,6 @@
+review/
+docs/
+HANDOFF.md
+.openai/
+dist/
+*.patch

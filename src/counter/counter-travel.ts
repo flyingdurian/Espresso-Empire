@@ -42,7 +42,12 @@ export function counterTravel(surface:HTMLElement, current:()=>Area, blocked:()=
  surface.addEventListener('lostpointercapture',up)
  surface.addEventListener('click',e=>{if(performance.now()<suppressUntil){e.preventDefault();e.stopImmediatePropagation()}},true)
  window.addEventListener('blur',clear)
- return {clear,frame(turn:Area|undefined):Slide|null{
+ function cancelForLayout(){
+  if(!hand&&!settling)return
+  if(hand?.active)suppressUntil=performance.now()+350
+  clear()
+ }
+ return {clear,cancelForLayout,frame(turn:Area|undefined):Slide|null{
   if(turn){return committed?.to===turn?committed:null}
   committed=null
   if(settling){const ease=Math.max(0,1-(performance.now()-settling.start)/155);if(ease>0)return {to:settling.to,fraction:settling.from*ease*ease};settling=null}

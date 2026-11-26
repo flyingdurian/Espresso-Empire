@@ -8,6 +8,16 @@ export const frontHot:Record<HotBay,HotRect>={
  oven:{x:1264,y:171,w:145,h:220},
  press:{x:1260,y:428,w:149,h:173}
 }
+// Front cabinetry slopes down toward the right. Keep the transformed press inside
+// its original bounds and share the projected food-motion endpoints with the scene.
+export function frontPressPoint(x:number,y:number){
+ const b=frontHot.press,cx=b.x+b.w/2,cy=b.y+b.h/2
+ return {x,y:cy+(y-cy)*.90+(x-cx)*.10}
+}
+export function frontPressPerspective(ctx:CanvasRenderingContext2D,draw:()=>void){
+ const b=frontHot.press,cx=b.x+b.w/2,cy=b.y+b.h/2
+ ctx.save();try{ctx.translate(cx,cy);ctx.transform(1,.10,0,.90,0,0);ctx.translate(-cx,-cy);draw()}finally{ctx.restore()}
+}
 export const hotArt=['bakery-ivory-shell','bakery-glass-motion','griglia-base','griglia-raised','griglia-half','griglia-copper','charred-cornetto','charred-panino']
 
 /** Baseline of the edible item in its own bay. Hit zones and all motion share this anchor. */
