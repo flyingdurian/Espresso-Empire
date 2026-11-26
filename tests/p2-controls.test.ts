@@ -19,11 +19,11 @@ const source=(name:string)=>readFileSync(new URL('../src/counter/'+name,import.m
 test('shot buttons and portafilter grips are mutually exclusive in desktop and compact layouts',()=>{
  for(const compact of [false,true]){
   const all=heads.flatMap((_,i)=>[shotKeyTouch(i,'short',compact),shotKeyTouch(i,'standard',compact),portafilterTouch(i)])
-  disjoint(all)
+  disjoint([...all,{x:49,y:466,w:48,h:44},{x:480,y:466,w:44,h:44}])
   for(let i=0;i<heads.length;i++){
    const standard=bounds(shotKeyTouch(i,'standard',compact)),grip=bounds(portafilterTouch(i))
    assert.ok((grip.t-standard.b)*scale>=2.5)
-   if(compact)assert.ok(bounds(shotKeyTouch(i,'standard',true)).t-bounds(shotKeyTouch(i,'short',true)).b>=4)
+   if(compact){assert.deepEqual(shotKeyTouch(i,'standard',true),shotKeyTouch(i,'standard'));assert.deepEqual(shotKeyTouch(i,'short',true),shotKeyTouch(i,'short'));assert.ok(bounds(shotKeyTouch(i,'standard',true)).l-bounds(shotKeyTouch(i,'short',true)).r>=4)}
   }
  }
  const css=source('style.css'),main=source('main.ts')

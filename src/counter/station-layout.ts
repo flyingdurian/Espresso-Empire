@@ -1,5 +1,6 @@
 import {pocketSeat,reserveHead} from './service-pass.ts'
 import type {Cup,Size,Drink} from './bench.ts'
+import {cupColumns} from './cup-stack-spec.ts'
 export const stage={w:1672,h:941}
 export const heads=[134,263,393]
 export const brewPoint=(head:number,lane:number)=>head===reserveHead?pocketSeat('shots',lane):({x:heads[head]+(lane?26:-25),y:594})
@@ -7,11 +8,10 @@ export const cupsX=[713,837]
 export const serveX=[736,994]
 export const foodX=[951,1037]
 export type Holder={cup:Cup;size:Size;x:number;y:number;h:number;w:number}
-export const holders:Holder[]=[
- {cup:'demi',size:'Medium',x:48,y:922,h:87.75,w:64},{cup:'mug',size:'Medium',x:118,y:922,h:93.15,w:64},
- {cup:'glass',size:'Medium',x:188,y:922,h:87.75,w:64},{cup:'bowl',size:'Medium',x:258,y:922,h:70.2,w:64},{cup:'tall',size:'Medium',x:328,y:922,h:87.75,w:64},
- ...(['paper','clear'] as const).flatMap((cup,row)=>(['Small','Large'] as const).map((size,i)=>({cup,size,x:[656,744,918,1004][row*2+i],y:879,h:i?104.8:98,w:85})))
-]
+// Stock column anchors are separate from the original active-drink heights.
+export const holders:Holder[]=cupColumns.map(c=>({cup:c.cup,size:c.size,x:c.x,y:c.y,
+ h:({demi:87.75,mug:93.15,glass:87.75,bowl:70.2,tall:87.75,paper:c.size==='Large'?104.8:98,clear:c.size==='Large'?104.8:98})[c.cup],
+ w:c.cup==='paper'||c.cup==='clear'?85:64}))
 export function vesselHeight(cup:Cup,size:Size){
  const h=holders.find(v=>v.cup===cup&&(v.size===size||cup!=='paper'&&cup!=='clear'))
  return h?.h??holders.find(v=>v.cup===cup)!.h

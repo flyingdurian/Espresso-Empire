@@ -1,7 +1,9 @@
 import {guestWalk,drawGait,leavingCounter,gaitAtlases} from './guest-walk.ts'
 import {servicePass,reserveHead,frontFoodSeat,pocketSeat} from './service-pass.ts'
-import {iceWell,scoopPose,scoopWithIce,icePortions,iceCubeCount,iceCubeStart} from './ice-service.ts'
+import {iceWell,scoopPose,scoopWithIce,icePortions,iceCubeCount,iceCubeStart,iceScoopHome,iceRim,iceAssets,iceAssetPath,iceBasinClip} from './ice-service.ts'
+import {activeCupId,activeLidId,activeCupAssets,activeCupPath,activeCupGeometry,visibleContents,liquidTop} from './active-cup.ts'
 import {drawCupRacks} from './cup-rack.ts'
+import {stackSpecs,stackAssetPath,stackParts,stackPartId,stackPartPath,stockStateIds,stockStatePath} from './cup-stack-spec.ts'
 import {espressoParts,glassHeight,doseVolume,shotGlass,brewGroup,extraction} from './espresso-bar.ts'
 import {drawMilkPitcher,drawSteamLane,loadMilkArt,milkCycle} from './milk-station.ts'
 import {drawColdStation} from './cold-station.ts'
@@ -14,7 +16,7 @@ import {beverageMachineArt,drawRearKitchen} from './rear-kitchen.ts'
 import {actingProfile} from './guest-performance.ts'
 import {receivingSpriteIds,handoffAnchor,sipPhase} from './handoff.ts'
 import {type Bench,type End,type Drink,type Delivery} from './bench.ts'
-import {holders,heads,brewPoint,cupsX,serveX,cupArt,stage,type Carry,stageCupY,beanBags,foodBins,miniRack,milkSpouts,vesselHeight,finishSources,citrusPress,isSyrup,syrupKeys} from './station-layout.ts'
+import {holders,heads,brewPoint,cupsX,serveX,stage,type Carry,stageCupY,beanBags,foodBins,miniRack,milkSpouts,vesselHeight,finishSources,citrusPress,isSyrup,syrupKeys} from './station-layout.ts'
 import {filterSockets,filterPose,filterTexture} from './filter-pose.ts'
 import {isLayer,transformLayer,type LayerMap,type LayerRect,type PreviewState} from './layer-overrides.ts'
 import {drinkLook,surfaceNames,vessel} from './drink-look.ts'
@@ -32,7 +34,7 @@ export async function workstation(canvas:HTMLCanvasElement){
  const load=async(key:string,url:string)=>{textures.set(key,await decode(url))}
  const ids=[...gaitAtlases,'service-well',...receivingSpriteIds,'door','window','forno-kitchen','return-bay','froth','cold-milk','beans','scoop-loaded','scoop-empty','ice-cube','portafilter-full','portafilter-empty','dose-ground','puck','pitcher-empty','towel','raw','baked','panino','grilled','grilled-pesto','panino-pesto','pesto','brownie','tea-carafe','blend-carafe','carafe-empty','wash-open','wash-closed','dish-tub','waste-press','waste-shutter','lids','lids-clear','clear-lid','paper-lid','clear-tea','clear-tea-lid','tall-tea','bowl-milk','tray',
  ...['paper','clear'].flatMap(c=>[1,2,3,4,5].map(n=>c+'-stack-'+n)),...['demi','mug','glass','bowl','tall','paper','clear'].flatMap(c=>['empty','shot','full'].map(k=>c+'-'+k)),...['e','f'].flatMap(c=>['glance','watch','thanks'].map(k=>'guest-'+c+'-'+k)),...['a','b','c','d','e','f'].flatMap(c=>['idle','happy'].map(k=>'guest-'+c+'-'+k))]
- const [milkArt]=await Promise.all([loadMilkArt(decode),...espressoParts.map(key=>load(key,'/station/'+key+'.webp')),...['citrus-press','orange-carafe','china-rack','takeaway-rack','brew-plinth'].map(name=>load(name,'/station/'+name+'.webp')),...[...hotArt,...beverageMachineArt].map(k=>load(k,'/forno/'+k+'.webp')),...surfaceNames.map(n=>load('surface-'+n,'/surfaces/'+n+'.webp')),...[1,2,3].map(n=>load('cube-'+n,'/surfaces/ice-'+n+'.webp')),...['filter-empty','filter-loose','filter-tamped','filter-inverted','filter-edge','grinder-fork-front',...Array.from({length:9},(_,i)=>'lock-'+i)].map(n=>load(n,'/filter/'+n+'.webp')),...[...syrupKeys,...beanBags.map(b=>b.key)].map(n=>load(n,'/pantry/'+n+'.webp')),...ids.map(k=>load(k,'/counter/'+k+'.webp')),...['plate','shot-tin','clean-tin','cold-jug'].map(k=>load('old-'+k,'/art/'+k+'.webp')),...Object.entries(rects).filter(([,r])=>typeof r.x==='number').map(([k,r])=>load('new-'+k,'/station/'+(r.file??k+'.webp').split('/').pop()))])
+ const [milkArt]=await Promise.all([loadMilkArt(decode),...activeCupAssets.map(id=>load(id,activeCupPath(id))),...stockStateIds.map(id=>load(id,stockStatePath(id))),...stackSpecs.flatMap(s=>[load(s.id,stackAssetPath(s)),...stackParts.map(p=>load(stackPartId(s,p),stackPartPath(s,p)))]),...iceAssets.map(id=>load(id,iceAssetPath(id))),...espressoParts.map(key=>load(key,'/station/'+key+'.webp')),...['citrus-press','orange-carafe','china-rack','takeaway-rack','brew-plinth'].map(name=>load(name,'/station/'+name+'.webp')),...[...hotArt,...beverageMachineArt].map(k=>load(k,'/forno/'+k+'.webp')),...surfaceNames.map(n=>load('surface-'+n,'/surfaces/'+n+'.webp')),...[1,2,3].map(n=>load('cube-'+n,'/surfaces/ice-'+n+'.webp')),...['filter-empty','filter-loose','filter-tamped','filter-inverted','filter-edge','grinder-fork-front',...Array.from({length:9},(_,i)=>'lock-'+i)].map(n=>load(n,'/filter/'+n+'.webp')),...[...syrupKeys,...beanBags.map(b=>b.key)].map(n=>load(n,'/pantry/'+n+'.webp')),...ids.map(k=>load(k,'/counter/'+k+'.webp')),...['plate','shot-tin','clean-tin','cold-jug'].map(k=>load('old-'+k,'/art/'+k+'.webp')),...Object.entries(rects).filter(([,r])=>typeof r.x==='number').map(([k,r])=>load('new-'+k,'/station/'+(r.file??k+'.webp').split('/').pop()))])
  // Resolve moving tools during setup, before a shift can start.
  textures.set('new-milk-pitcher',milkArt.pitcher)
  const pourActions=['transfer','ice','tea','cold','milk','foam','coldmilk','orange',...syrupKeys] as const
@@ -193,19 +195,20 @@ export async function workstation(canvas:HTMLCanvasElement){
   pen.restore()
  }
  function drink(c:Drink,x:number,y:number,h:number,previous?:Drink,fraction=1,iceProgress=1){
-  const art=c.cup+'-empty',im=textures.get(art)!,width=h*im.width/im.height,shape=vessel[c.cup]
-  const cx=x-width/2+width*shape.cx,ry=h*shape.ry,rx=width*shape.rx,rim=y-h+h*shape.rim,foot=y-h+h*shape.foot
+  const art=activeCupId(c.cup,c.size),im=textures.get(art)!
+  const geo=activeCupGeometry(c,x,y,h,im.width/im.height),{w:width,shape,cx,ry,rx,rim,foot}=geo
+  h=geo.h
   const look=drinkLook(c),old=previous?drinkLook(previous):look,fill=mix(old.fill,look.fill,fraction)
   prop(art,x,y,h)
   const transparent=shape.glass
-  const top=transparent?mix(foot-ry*.16,rim,fill):rim+ry*(1-fill)*1.27
+  const top=liquidTop(geo,fill),visibility=visibleContents(c.cup,fill)
   const rad=rx*(transparent?.62+.38*fill:.88+.12*fill)
   ctx.save();ctx.beginPath()
   if(transparent){
    ctx.moveTo(cx-rx,rim);ctx.lineTo(cx-rx*.60,foot);ctx.quadraticCurveTo(cx,foot+ry*.50,cx+rx*.60,foot);ctx.lineTo(cx+rx,rim);ctx.bezierCurveTo(cx+rx,rim-1.4*ry,cx-rx,rim-1.4*ry,cx-rx,rim)
   }else ctx.ellipse(cx,rim,rx,ry,0,0,Math.PI*2)
   ctx.clip()
-  if(fill>.005){
+  if(fill>.005&&visibility.surface){
    if(transparent){
     const depth=foot-top
     ctx.fillStyle=old.fill?old.color:look.color;ctx.fillRect(cx-rx,top,2*rx,depth+ry)
@@ -253,7 +256,7 @@ export async function workstation(canvas:HTMLCanvasElement){
     ctx.beginPath();ctx.ellipse(cx,top,rad*(.15+.58*fraction),ryTop*(.13+.58*fraction),0,0,Math.PI*2);ctx.stroke();ctx.restore()
    }
   }
-  if(look.ice){
+  if(look.ice&&visibility.ice){
    const count=iceCubeCount(c.size==='Large'?2:1)
    for(let i=0;i<count;i++){
     const start=iceCubeStart(i,count),settled=phase(iceProgress,start+.30,start+.62)
@@ -267,10 +270,10 @@ export async function workstation(canvas:HTMLCanvasElement){
    }
   }
   ctx.restore()
-  if(transparent&&(look.ice||fill))prop(art,x,y,h,0,.24)
-  if(c.lid){
-   ctx.save();ctx.beginPath();ctx.rect(x-width*.57,y-h,width*1.14,h*(c.cup==='clear'?.28:.31));ctx.clip()
-   prop(cupArt(c),x,y,h);ctx.restore()
+  if(transparent&&(look.ice||fill))prop(art,x,y,h,0,.42)
+  if(c.lid&&(c.cup==='paper'||c.cup==='clear')){
+   const lid=activeLidId(c.cup),li=textures.get(lid)!,lw=rx*2.12,lh=Math.min(lw*li.height/li.width,h*.24)
+   image(lid,cx-lw/2,rim+ry*.65-lh,lw,lh)
   }
  }
  let heldIce:{start:number;pointer:{x:number;y:number}|null;portions:number}|null=null
@@ -281,7 +284,7 @@ export async function workstation(canvas:HTMLCanvasElement){
  function releaseIce(game:Bench,slot:number){
   if(!heldIce||gatherAge()<130)return
   const p=scoopPose(gatherAge(),heldIce.pointer)
-  releaseIngredient(game,slot,{kind:'add',add:'ice'},p.x,p.y-38*.36)
+  releaseIngredient(game,slot,{kind:'add',add:'ice'},p.x,p.y-iceScoopHome.h*.36)
  }
  function gatherAge(){return heldIce?performance.now()-heldIce.start:0}
  const releases=new WeakMap<Bench,Map<number,{tick:number;carry:Carry;x:number;y:number}>>()
@@ -445,9 +448,14 @@ export async function workstation(canvas:HTMLCanvasElement){
    hotAppliance(g,t,station,box.x,box.y,box.w,box.h)
   }
   layer('microwave',1112,440,134,126,()=>{fixed(g.microReady?'microwave-open':'microwave');if(g.microReady)prop('baked',1180,539,26)})
-  layer('ice',1218,635,261,82,()=>{
+  layer('ice',iceRim.x,iceRim.y,iceRim.w,iceRim.h,()=>{
+   image('empire_ice_brass_rim',iceRim.x,iceRim.y,iceRim.w,iceRim.h)
    iceWell(ctx,prop,g.ice-(heldIce&&gatherAge()>155?Math.min(g.ice,heldIce.portions):0),g.data.capacity.ice)
-   if(!heldIce&&!g.pouringFrom('ice'))prop('scoop-empty',1446,703,38,-.15)
+   if(!heldIce&&!g.pouringFrom('ice')){
+    ctx.save();iceBasinClip(ctx);ctx.fillStyle='rgba(23,15,10,.32)';ctx.beginPath();ctx.ellipse(iceScoopHome.x-9,iceScoopHome.y-5,25,5,0,0,Math.PI*2);ctx.fill();ctx.restore()
+    prop('empire_ice_scoop',iceScoopHome.x,iceScoopHome.y,iceScoopHome.h,iceScoopHome.angle)
+   }
+   image('empire_ice_front_lip',iceRim.x,iceRim.y,iceRim.w,iceRim.h)
   })
   if(!g.kitchen){
    const bin=servicePass.carafes
@@ -456,7 +464,7 @@ export async function workstation(canvas:HTMLCanvasElement){
    if(g.teaStock&&!(lifting?.kind==='add'&&lifting.add==='tea'))prop('tea-carafe',1497,831,64)
    if(g.blendStock&&!(lifting?.kind==='add'&&lifting.add==='cold'))prop('blend-carafe',1595,833,68)
   }
-  drawCupRacks(ctx,image,prop,g,lifting,layer)
+  drawCupRacks(ctx,image,prop,g,lifting,layer,preview?.map)
   drawWastePress(ctx,image,prop,g,t,404,748,142,193)
   const {pesto,brownie}=frontGalley
   if(lifting?.kind!=='pesto')prop('pesto',pesto.x,pesto.y+30,55)
@@ -499,10 +507,11 @@ export async function workstation(canvas:HTMLCanvasElement){
    const p=progress(t,transit),a=transit.action
    const visual={...c,poured:c.poured||a==='transfer',add:a==='transfer'?c.add:[...c.add,a]}
    const amount=fillProgress(p),iceProgress=phase(p,.33,.76)
-   const shape=vessel[c.cup],im=textures.get(c.cup+'-empty')!,w=h*im.width/im.height
-   const cx=x+(shape.cx-.5)*w,rim=stageCupY-h+h*shape.rim
+   const im=textures.get(activeCupId(c.cup,c.size))!,geo=activeCupGeometry(c,x,stageCupY,h,im.width/im.height)
+   const {shape,w,cx,rim}=geo
    const fill=mix(drinkLook(c).fill,drinkLook(visual).fill,amount)
-   const landed=shape.glass?mix(stageCupY-h+h*shape.foot-h*shape.ry*.16,rim,fill):rim+h*shape.ry*(1-fill)*1.27
+   // Stop the exterior stream at the opening of an opaque vessel; the contents are hidden.
+   const landed=shape.glass?liquidTop(geo,fill):rim
    if(isSyrup(a)){
     const pump=finishSources[a],im=textures.get(a)!,nozzle={x:pump.x-pump.h*im.width/im.height*.43,y:pump.y-pump.h*.89+Math.sin(Math.PI*phase(p,.3,.72))*5}
     const reach=Math.min(phase(p,0,.30),1-phase(p,.73,1)),xx=mix(x,nozzle.x-(cx-x),reach),yy=mix(stageCupY,stageCupY+nozzle.y+11-rim,reach)
@@ -561,7 +570,7 @@ export async function workstation(canvas:HTMLCanvasElement){
   }
   if(heldIce){
    const p=scoopPose(gatherAge(),heldIce.pointer)
-   scoopWithIce(ctx,prop,p.x,p.y,38,p.angle,p.load,0,heldIce.portions)
+   scoopWithIce(ctx,prop,p.x,p.y,iceScoopHome.h,p.angle,p.load,0,heldIce.portions)
   }
  }
  function kitchen(g:Bench,t:number){
@@ -595,9 +604,9 @@ export async function workstation(canvas:HTMLCanvasElement){
     key=item.station==='oven'?'baked':g.pressSlots[item.slot]?.pesto?'grilled-pesto':'grilled';const count=item.station==='oven'?g.ovenSlots.length:g.pressSlots.length
     h=rackFoodHeight(item.station,g.kitchen?(item.station==='oven'?278:304):frontHot[item.station].w,count);break
    }
-   case 'cup':{contents=g.cups[item.slot];if(contents){key=contents.cup+'-empty';h=vesselHeight(contents.cup,contents.size)}break}
+   case 'cup':{contents=g.cups[item.slot];if(contents){key=activeCupId(contents.cup,contents.size);h=vesselHeight(contents.cup,contents.size)}break}
    case 'food':{const f=g.foodAt(item.slot);key=f?.food==='pesto'?'grilled-pesto':f?.food??'brownie';h=g.kitchen?62:frontFoodSeat(item.slot,g.towel.length).h;break}
-   case 'holder':{const b=holders[item.index];key=b.cup+'-empty';h=b.h;break}
+   case 'holder':{const b=holders[item.index];key=activeCupId(b.cup,b.size);h=b.h;break}
    case 'pot':key='shot-glass';h=glassHeight*(item.head===reserveHead?.88:1);break
    case 'beans':key=beanBags[item.bag].key;h=96;break
    case 'handle':key=filterTexture(g);h=g.basket==='dosed'?47:49;break
@@ -616,14 +625,16 @@ export async function workstation(canvas:HTMLCanvasElement){
     }
     if(a==='coldmilk'){key='new-milk-carton';h=finishSources[a].h}
     else if(a==='orange'){key='orange-carafe';h=citrusPress.carafe.h}
-    else if(a==='ice'){key='scoop-loaded';h=38;angle=-.15}
+    else if(a==='ice'){key='empire_ice_scoop';h=iceScoopHome.h;angle=-.15}
     else if(a==='water'){key='old-clean-tin';h=43}
     else if(a==='tea'||a==='cold'){key=a==='tea'?'tea-carafe':'blend-carafe';h=a==='tea'?64:68}
     else{key='new-milk-pitcher';h=40}
     break
    }
   }
-  const im=textures.get(key)!,w=h*im.width/im.height,pad=angle?Math.ceil(w*.17):2
+  const im=textures.get(key)!
+  if(item.kind==='holder')h=activeCupGeometry({cup:holders[item.index].cup,size:holders[item.index].size,lid:false},0,0,h,im.width/im.height).h
+  const w=h*im.width/im.height,pad=angle?Math.ceil(w*.17):2
   const logicalWidth=Math.ceil(w+pad*2),logicalHeight=Math.ceil(h+pad*2)
   const ghost=document.createElement('canvas');ghost.width=logicalWidth*2;ghost.height=logicalHeight*2
   const original=ctx;ctx=ghost.getContext('2d')!

@@ -105,7 +105,7 @@ footer{background:#3d2820;border-top:1px solid #a38055}
 
 .compactor-readout{position:absolute;top:50%;left:42%;transform:translate(-50%,-50%);white-space:nowrap;border:1px solid #ae9270;border-radius:3px;padding:.13em .4em;background:#34251cff;color:#ffe6ad;font:680 clamp(9px,.82cqw,14px)/1.2 system-ui;pointer-events:none;box-shadow:0 1px 2px #26180c}
 
-/* At phone scale keep the shot name on the actual control and give each switch vertical travel room. */
+/* Preserve original physical key arrangement at phone scale. */
 @media (orientation:landscape) and (max-height:550px){
  .machine-key{font-size:clamp(8px,1.35cqw,12px);min-height:22px;margin-top:-3px}
  .machine-key .key-face{width:98%;height:84%}
@@ -132,7 +132,7 @@ footer{background:#3d2820;border-top:1px solid #a38055}
 .choosing-cup [data-to^="saucer/"][data-carry]{box-shadow:inset 0 -2px #d5a857}
 @media (max-height:550px) and (orientation:landscape){
  .machine-key.shot-key{left:var(--group-x)!important;top:var(--shot-top)!important;width:var(--shot-width)!important;height:var(--shot-height)!important;min-height:0;transform:translateX(-50%);margin-top:0}
- .machine-key.shot-key .control-face{width:78%;height:88%;border-radius:22%}
+ .machine-key.shot-key .control-face{width:85%;height:75%;border-radius:38%}
 }
 
 .shift-ledger{display:grid;grid-template-columns:1fr auto;gap:.42em 2em;margin:1em 0;padding:.85em 1em;background:#eadcbf;border-inline:1px solid #c3ac80;font-size:1rem;color:#453223}
@@ -152,9 +152,6 @@ footer{background:#3d2820;border-top:1px solid #a38055}
 @keyframes payment-in{from{opacity:.1;translate:0 .4em}to{opacity:1;translate:0 0}}
 @media(prefers-reduced-motion:reduce){#counter-payment{animation:none}}
 
-/* Quantity windows sit on the shelf lip, beneath each set of ceramics. */
-.cup-bin .china-stock,.cup-bin .sleeve-tag{position:absolute;left:50%;bottom:-.42em;transform:translateX(-50%);min-width:1.5em;padding:0 .25em;border:1px solid #937144;border-radius:2px;color:#f9e6b9;background:#412f24;font:700 clamp(7px,.72cqw,12px)/1.05 system-ui;white-space:nowrap;pointer-events:none}
-.cup-bin .sleeve-tag{min-width:2.8em;color:#412d1c;background:linear-gradient(#ead4a9,#c9a873)}
 .machine-key.milk-label.tactile .dose-rail{display:flex;align-items:center;justify-content:center;gap:8%;width:91%;height:32%;min-height:3px;background:#392b22;border:1px solid #b19563;border-radius:4px}
 .dose-rail i{display:block;width:16%;height:60%;min-height:1px;background:#60544a;border-radius:2px}
 .dose-rail .charged{background:#ffe1a2;box-shadow:0 0 2px #e2b86e}

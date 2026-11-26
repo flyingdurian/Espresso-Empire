@@ -4,6 +4,7 @@ import type {Tuning} from '../content/model.ts'
 
 export type End='Door'|'Window'
 export type Cup='demi'|'mug'|'glass'|'bowl'|'tall'|'paper'|'clear'
+export type LidMaterial='paper'|'clear'
 export type Size='Small'|'Medium'|'Large'
 export type Food='brownie'|'baked'|'grilled'|'pesto'
 export type Mode='Dine in'|'To go'
@@ -13,7 +14,7 @@ export type Add='milk'|'water'|'cold'|'foam'|'ice'|'coldmilk'|'tea'|'cocoa'|'mat
 export type Station='knock'|'handleTravel'|'handleLock'|'grinder'|'steamer'|'oven'|Shot|'transfer'|'finish'|'load'|'service'|'turn'|'entrance'|'departure'|'press'|'tea'|'blend'|'lid'|'compact'|'wash'|'dishReturn'|'microwave'|'purge'|'foodFlight'|'refillMilk'|'fridgeDoor'|'citrus'
 export type Recipe={name:string;cup:Cup;travelCup:Cup;shot:Shot|null;add:Add[];price:number}
 export type Order={end:End;spot:number;look:string;name:string;mode:Mode;size:Size;drink:string|null;food:Food|null;after:number;patience:number;archetype?:'Regular'|'Student'|'Remote worker'|'Tourist'|'Critic';tipMultiplier?:number}
-export type Config={startView?:End|'Kitchen';seed:number;tickMs:number;stations:Record<Station,number>;capacity:{milkTank:number;carton:number;milkCartons:number;finishPortions:number;bin:number;heads:number;pitchers:number;ice:number;hopper:number;startBeans:number;basketDoses:number;beanBags:number;startGround:number;grindBatch:number;milkBatch:number;oven:number;press:number;saucers:number;towel:number;citrus:number;tea:number;blend:number;largePortions:number;ceramic:number;takeaway:number;reserve:number;wash:number};
+export type Config={startView?:End|'Kitchen';seed:number;tickMs:number;stations:Record<Station,number>;capacity:{milkTank:number;carton:number;milkCartons:number;finishPortions:number;bin:number;heads:number;pitchers:number;ice:number;hopper:number;startBeans:number;basketDoses:number;beanBags:number;startGround:number;grindBatch:number;milkBatch:number;oven:number;press:number;saucers:number;towel:number;citrus:number;tea:number;blend:number;largePortions:number;ceramic:number;takeaway:number;lids?:number;reserve:number;wash:number};
  cups:Record<Cup,string>;finishes:Record<Add,string>;foods:Record<Food,{name:string;price:number}>;recipes:Record<string,Recipe>;orders:Order[];partialRelief?:number;ovenGrace?:number;pressGrace?:number;ovenWarning?:number;jitterSeconds:number}
 export type Drink={uid:number;cup:Cup;size:Size;shot:Shot|null;add:Add[];poured:boolean;lid:boolean;placed:number}
 export type Serving={food:Food}
@@ -32,7 +33,7 @@ export type WasteTarget={kind:'drink'|'food'|'shot';slot:number;head?:number;lan
 export type Basket='mounted'|'released'|'held'|'knocking'|'clean'|'emptyHeld'|'grinding'|'dosed'|'dosedHeld'|'atTamp'|'tamping'|'tamped'|'locking'
 export type Group={dirty:boolean;flush:Cycle|null;pulls:number;pots:(Shot|null)[];extraction:(Cycle&{shot:Shot;lane:number})|null}
 type DirectedPour={action:'add';slot:number;add:Add}|{action:'pour';slot:number;head:number;lane:number}
-export type Input={action:'parkShot';head:number;lane:number;pocket:number}|{action:'bankHot';station:HotBay;slot?:number;dragged?:boolean}|{action:'serviceGroup';head:number}|{action:'grinderLever'}|{action:'dropPour';pour:DirectedPour}|{action:'purge';head?:number}|{action:'steam';texture?:Texture}|{action:'refillMilk'}|{action:'beans';bag?:number}|{action:'releaseKnock'|'pick'|'knock'|'dose'|'placeTamp'|'moveToTamp'|'tamp'|'lock'}|{action:'release';head?:number}|{action:'refillIce'|'heat'}|{action:'returnCup';slot:number;cup:Cup;size:Size}|{action:'returnBrownie';slot:number}|{action:'trash';target:WasteTarget}|{action:'restock';cup:Cup;size:Size}|{action:'drawer'|'washLoad'|'washRun'}|{action:'pull';shot:Shot;head?:number;lane?:number}|{action:'cup';cup:Cup;size?:Size;slot?:number}|{action:'add';add:Add;slot?:number}|{action:'select'|'food';slot:number}|{action:'guest';guest:number}|{action:'serve';guest:number;kind:'cup'|'food';slot:number}|{action:'pour';slot?:number;head?:number;lane?:number}|{action:'to';view:End|'Kitchen'}|{action:'load'|'sandwich'|'pesto';slot?:number;dragged?:boolean}|{action:HotBay;slot?:number;towelSlot?:number;dragged?:boolean}|{action:'grind'|'discard'|'lid'|'compact'|'brownie'|'tea'|'blend'|'citrus'}
+export type Input={action:'parkShot';head:number;lane:number;pocket:number}|{action:'bankHot';station:HotBay;slot?:number;dragged?:boolean}|{action:'serviceGroup';head:number}|{action:'grinderLever'}|{action:'dropPour';pour:DirectedPour}|{action:'purge';head?:number}|{action:'steam';texture?:Texture}|{action:'refillMilk'}|{action:'beans';bag?:number}|{action:'releaseKnock'|'pick'|'knock'|'dose'|'placeTamp'|'moveToTamp'|'tamp'|'lock'}|{action:'release';head?:number}|{action:'refillIce'|'heat'}|{action:'returnCup';slot:number;cup:Cup;size:Size}|{action:'returnBrownie';slot:number}|{action:'trash';target:WasteTarget}|{action:'restock';cup:Cup;size:Size}|{action:'lid';material?:LidMaterial}|{action:'restockLid';material:LidMaterial}|{action:'drawer'|'washLoad'|'washRun'}|{action:'pull';shot:Shot;head?:number;lane?:number}|{action:'cup';cup:Cup;size?:Size;slot?:number}|{action:'add';add:Add;slot?:number}|{action:'select'|'food';slot:number}|{action:'guest';guest:number}|{action:'serve';guest:number;kind:'cup'|'food';slot:number}|{action:'pour';slot?:number;head?:number;lane?:number}|{action:'to';view:End|'Kitchen'}|{action:'load'|'sandwich'|'pesto';slot?:number;dragged?:boolean}|{action:HotBay;slot?:number;towelSlot?:number;dragged?:boolean}|{action:'grind'|'discard'|'compact'|'brownie'|'tea'|'blend'|'citrus'}
 export class Bench{
  data:Config;tuning:Tuning;tick=0;age=0;started=false;end:End='Door';kitchen=false;turn:(Cycle&{to:End|'Kitchen'})|null=null;seed:number
  groups:Group[];serviceHead=0;ice:number;microwave:Cycle|null=null;microReady=false
@@ -88,6 +89,8 @@ export class Bench{
  brew:Cycle|null=null;blend:Cycle|null=null;teaReady=false;blendReady=false;teaStock=0;blendStock=0
  snap:(Cycle&{slot:number})|null=null
  stock:Record<string,number>={};reserve:Record<string,number>={};drawer=false
+ lidStock:Record<LidMaterial,number>;lidReserve:Record<LidMaterial,number>
+ get lidCapacity(){return this.data.capacity.lids??5}
  returns:{cup:Cup;at:number}[]=[];dirty:Cup[]=[];washRack:Cup[]=[];wash:Cycle|null=null;washed=false
  guests:Guest[];deliveries:Delivery[]=[];served=0;expired=0;sales=0;tips=0;bonuses=0
  payments:{guest:number;price:number;tip:number;bonus:number;at:number}[]=[]
@@ -95,7 +98,7 @@ export class Bench{
  get coins(){return this.sales+this.tips+this.bonuses}
  smiles=0;combo=0;lastPay:number|null=null;waste=0;wastePieces:string[]=[];get binLoad(){return this.wastePieces.length}compacting:Cycle|null=null;binChanged=-1000;nextUid=1;events:string[]=[]
  constructor(data:Config,tuning:Tuning){
-  this.data=data;this.tuning=tuning;this.seed=data.seed;this.beans=data.capacity.startBeans;this.ground=data.capacity.startGround
+  this.data=data;this.lidStock={paper:this.lidCapacity,clear:this.lidCapacity};this.lidReserve={paper:data.capacity.reserve,clear:data.capacity.reserve};this.tuning=tuning;this.seed=data.seed;this.beans=data.capacity.startBeans;this.ground=data.capacity.startGround
   this.milkTank=data.capacity.milkTank;this.milkReserve=data.capacity.carton*data.capacity.milkCartons
   this.groups=Array.from({length:data.capacity.heads},()=>({dirty:false,flush:null,pulls:data.capacity.basketDoses,pots:Array(data.capacity.pitchers).fill(null),extraction:null}));this.ice=data.capacity.ice;this.bags=data.capacity.beanBags
   this.ovenSlots=Array.from({length:data.capacity.oven},()=>emptyHotSlot(0))
@@ -152,7 +155,7 @@ export class Bench{
   if(!g||!o||g.state!=='waiting'||o.end!==this.end||this.kitchen||this.turn)return false
   if(kind==='food')return !!this.foodAt(slot)&&!g.gotFood&&this.foodAt(slot)!.food===o.food
   const c=this.cups[slot]
-  return !!c&&!g.gotDrink&&!this.pending.has(slot)&&!this.pouringAt(slot)&&this.recipe(c)===o.drink&&takeCup(c.cup)===(o.mode==='To go')&&c.size===o.size&&(o.mode!=='To go'||c.lid||pack)
+  return !!c&&!g.gotDrink&&!this.pending.has(slot)&&!this.pouringAt(slot)&&this.recipe(c)===o.drink&&takeCup(c.cup)===(o.mode==='To go')&&c.size===o.size&&(o.mode!=='To go'||c.lid||(pack&&takeCup(c.cup)&&this.lidStock[c.cup as LidMaterial]>0))
  }
  ticks(seconds:number){return Math.ceil(seconds*1000/this.data.tickMs)}
  cycle(id:Station):Cycle{return {start:this.tick,end:this.tick+this.ticks(this.data.stations[id])}}
@@ -348,6 +351,12 @@ export class Bench{
    }
 
    case 'drawer':this.drawer=!this.drawer;return this.log(this.drawer?'Reserve open · choose a stack':'Reserve closed')
+   case 'restockLid':{
+    if(!this.drawer)return 'Open the reserve drawer'
+    const k=c.material,qty=Math.min(this.lidCapacity-this.lidStock[k],this.lidReserve[k])
+    if(!(qty>0))return this.lidStock[k]===this.lidCapacity?'Lid stack already full':'No reserve lids left'
+    this.lidStock[k]+=qty;this.lidReserve[k]-=qty;this.drawer=false;return this.log('Lids replenished')
+   }
    case 'restock':{
     if(!this.drawer||!takeCup(c.cup))return 'Open the reserve drawer'
     const key=stockKey(c.cup,c.size),qty=Math.min(cap.takeaway-this.stock[key],this.reserve[key])
@@ -531,7 +540,10 @@ export class Bench{
    case 'lid':{
     const cup=this.cups[this.selected]
     if(this.source!=='cup'||!cup||!takeCup(cup.cup)||!this.recipe(cup)||cup.lid||this.pouringAt(this.selected))return 'Select a finished takeaway cup'
-    cup.lid=true;this.snap={...this.cycle('lid'),slot:this.selected};break
+    const material=cup.cup as LidMaterial
+    if(c.material!==undefined&&c.material!==material)return 'Choose the matching lid'
+    if(!this.lidStock[material])return 'Lid stack empty · open reserve drawer'
+    this.lidStock[material]--;cup.lid=true;this.snap={...this.cycle('lid'),slot:this.selected};break
    }
    case 'food':if(!this.foodAt(c.slot))return 'Empty towel space';this.source='food';this.foodIndex=c.slot;return this.log('Food selected')
    case 'select':
@@ -539,7 +551,7 @@ export class Bench{
     this.selected=c.slot;this.source='cup';return this.log(this.cups[c.slot]?this.label(this.cups[c.slot])+' selected':'Empty saucer selected')
    case 'serve':
     if(!this.canServe(c.guest,c.kind,c.slot,true))return 'The dragged item does not match that ticket'
-    if(c.kind==='cup'&&takeCup(this.cups[c.slot]!.cup))this.cups[c.slot]!.lid=true
+    if(c.kind==='cup'){const cup=this.cups[c.slot]!;if(takeCup(cup.cup)&&!cup.lid){this.lidStock[cup.cup as LidMaterial]--;cup.lid=true}}
     this.source=c.kind; if(c.kind==='cup')this.selected=c.slot;else this.foodIndex=c.slot
     return this.command({action:'guest',guest:c.guest})
    case 'add':{

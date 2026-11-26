@@ -1,4 +1,5 @@
 import type {Add} from './bench.ts'
+import {iceScoopHome} from './ice-service.ts'
 import {frontGalley} from './galley-layout.ts'
 import {brewPoint,citrusPress,finishSources,isSyrup,milkSpouts} from './station-layout.ts'
 
@@ -11,7 +12,7 @@ const mix=(a:number,b:number,u:number)=>a+(b-a)*u
 
 export function tool(action:Exclude<PourAction,'water'>,head:number,lane:number){
  if(action==='transfer')return {home:brewPoint(head,lane),key:'shot-glass',h:39,lip:[-.47,-.90],tilt:-.83,color:'#814222'}
- if(action==='ice')return {home:{x:1446,y:703},key:'scoop-loaded',h:38,lip:[-.48,-.10],tilt:-.65,color:''}
+ if(action==='ice')return {home:iceScoopHome,key:'empire_ice_scoop',h:iceScoopHome.h,lip:[-.27,-.12],tilt:-.65,color:''}
  if(action==='orange')return {home:citrusPress.carafe,key:'orange-carafe',h:citrusPress.carafe.h,lip:[-.43,-.88],tilt:-.94,color:'#ec9a32'}
  if(action==='tea'||action==='cold')return {home:frontGalley.carafes[action],key:action==='tea'?'tea-carafe':'blend-carafe',h:action==='tea'?64:68,lip:[-.43,-.88],tilt:-.94,color:action==='tea'?'#ac591c':'#c7a382'}
  if(action==='milk'||action==='foam')return {home:action==='milk'?milkSpouts.silky:milkSpouts.airy,key:'new-milk-pitcher',h:40,lip:[-.46,-.92],tilt:action==='foam'?-1.08:-.78,color:action==='foam'?'#fff4dc':'#f6e6ca'}
@@ -25,7 +26,7 @@ export function pourPose(action:Exclude<PourAction,'water'>,p:number,head:number
  const src=tool(action,head,lane),ice=action==='ice',pump=isSyrup(action)
  const reach=ease(phase(p,ice&&!release? .15:0,.32)),ret=ease(phase(p,.77,1))
  const tilt=ease(phase(p,.20,.39))*(1-ease(phase(p,.66,.81)))
- const angle=mix(ice?-.15:0,src.tilt,tilt),wd=src.h*aspect
+ const angle=mix(ice?iceScoopHome.angle:0,src.tilt,tilt),wd=src.h*aspect
  const h=src.h-(pump?3*Math.sin(Math.PI*phase(p,.29,.62)):0)
  const lipX=wd*src.lip[0],lipY=h*src.lip[1]
  const dx=lipX*Math.cos(angle)-lipY*Math.sin(angle),dy=lipX*Math.sin(angle)+lipY*Math.cos(angle)

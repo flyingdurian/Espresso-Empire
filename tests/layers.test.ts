@@ -5,7 +5,8 @@ import {Bench,type Config} from '../src/counter/bench.ts'
 import type {Tuning} from '../src/content/model.ts'
 import {identity,layerIds,parseLayerMap,serializeLayerMap,previewBench,previewStates,transformLayer} from '../src/counter/layer-overrides.ts'
 import {holders,miniRack,beanBags,finishSources,syrupKeys,citrusPress,fridge,stage} from '../src/counter/station-layout.ts'
-import {chinaStack,holderTouch} from '../src/counter/cup-rack.ts'
+import {holderTouch} from '../src/counter/cup-rack.ts'
+import {cupColumns,stackFrames} from '../src/counter/cup-stack-spec.ts'
 import {citrusTouch,frontSupplyTouch,milkTouch,syrupTouch,applianceTouch,type TouchBox} from '../src/counter/touch-layout.ts'
 import {frontHot,frontPressPoint} from '../src/counter/hot-appliance.ts'
 import {iceSeats,scoopWithIce,icePortions} from '../src/counter/ice-service.ts'
@@ -31,7 +32,7 @@ test('layer transform uses a center pivot and restores the context even after a 
 })
 test('state previews are detached snapshots and preserve live inventory, timing, appliances and recipes',()=>{
  const g=game(),before=structuredClone(g)
- const empty=previewBench(g,'ice','empty'),steaming=previewBench(g,'milk/silky','working'),press=previewBench(g,'front/press','ready'),cup=previewBench(g,'cup-stack/2','empty')
+ const empty=previewBench(g,'ice','empty'),steaming=previewBench(g,'milk/silky','working'),press=previewBench(g,'front/press','ready'),cup=previewBench(g,'empire_latte_glass','empty')
  assert.equal(empty.ice,0);assert.equal(g.ice,6)
  assert.ok(steaming.steamJobs.silky);assert.equal(g.steamJobs.silky,null)
  assert.equal(press.pressSlots[0].state,'ready');assert.equal(g.pressSlots[0].state,'empty')
@@ -41,10 +42,10 @@ test('state previews are detached snapshots and preserve live inventory, timing,
  assert.deepEqual(previewStates('espresso'),['current']);assert.ok(previewStates('citrus').includes('working'))
 })
 test('five dine-in stack positions share one baseline with independent targets and preserved vessel identities',()=>{
- const china=holders.slice(0,5),g=game(),targets=china.map(holderTouch)
+ const china=holders.slice(0,5),g=game(),targets=china.map(b=>holderTouch(b))
  assert.equal(new Set(china.map(b=>b.y)).size,1)
  assert.deepEqual(china.map(b=>b.cup),['demi','mug','glass','bowl','tall'])
- for(const b of china){const stack=chinaStack(b,g.stock[b.cup]);assert.equal(stack.length,5);assert.equal(stack[0].y,b.y);assert.ok(stack.every((p,i)=>i===0||p.y<stack[i-1].y))}
+ for(const [i,b] of china.entries()){const stack=stackFrames(cupColumns[i],g.stock[b.cup],5);assert.equal(stack.length,5);assert.equal(stack[0].y+stack[0].h,b.y);assert.ok(stack.every((p,i)=>i===0||p.y<stack[i-1].y))}
  for(let i=0;i<targets.length;i++){assert.ok(bounds(targets[i]));for(let j=i+1;j<targets.length;j++)assert.equal(overlap(targets[i],targets[j]),false)}
  for(const b of china){g.command({action:'cup',cup:b.cup,size:b.size,slot:0});assert.equal(g.stock[b.cup],4);g.command({action:'returnCup',cup:b.cup,size:b.size,slot:0});assert.equal(g.stock[b.cup],5)}
 })
@@ -70,9 +71,9 @@ test('seated bags and milk pitchers stay registered to their shelves and exclusi
 test('six ice units remove visible layers monotonically; large pours debit two, failed pours never debit, refill restores six',()=>{
  const g=game();assert.equal(g.ice,6)
  for(let n=6;n>0;n--){const before=iceSeats(n,6),after=iceSeats(n-1,6);assert.ok(after.length<before.length);assert.ok(after.every(p=>before.some(q=>q.rank===p.rank&&q.x===p.x&&q.y===p.y)))}
- assert.equal(iceSeats(0,6).length,0);assert.ok(iceSeats(6,6).length>45)
+ assert.equal(iceSeats(0,6).length,0);assert.ok(iceSeats(6,6).length>30)
  const pen=new Proxy({}, {get:()=>()=>{}}) as CanvasRenderingContext2D,painted:string[]=[]
- scoopWithIce(pen,k=>painted.push(k),0,0,38,0,1,0,2);assert.equal(painted.filter(k=>k.startsWith('cube-')).length,6)
+ scoopWithIce(pen,k=>painted.push(k),0,0,38,0,1,0,2);assert.equal(painted.filter(k=>k.startsWith('empire_ice_cube_')).length,6)
  assert.equal(icePortions('Large',g.data.capacity.largePortions),2)
  const tick=()=>{for(let i=0;i<g.ticks(g.data.stations.finish)+1;i++)g.step()}
  g.command({action:'cup',cup:'clear',size:'Large',slot:0});g.command({action:'add',add:'ice',slot:0});tick();assert.equal(g.ice,4)

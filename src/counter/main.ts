@@ -1,5 +1,6 @@
+import {activeCupId,activeCupPath} from './active-cup.ts'
 import {servicePass,reserveHead,chooseShotPocket} from './service-pass.ts'
-import {lidSeats,holderTouch} from './cup-rack.ts'
+import {lidSeats,lidTouch,holderTouch} from './cup-rack.ts'
 import {machineControl} from './machine-control.ts'
 import './style.css'
 import {dropTarget} from './drop-target.ts'
@@ -301,7 +302,7 @@ async function open(){
  function renderControls(){
   if(drag||!assist||bookOpen)return
   const cc=el('controls'),group=g.groups[head],cup=selectedCup()
-  const serial=JSON.stringify([panel,head,g.view,g.basket,g.groups.map(h=>[h.pulls,h.pots,h.extraction?.lane]),g.pour?.slot,g.selected,g.source,g.foodIndex,g.cups,g.towel,g.drawer,g.bags,g.beans,g.ice,g.milk,g.milkTank,g.milkReserve,g.textures.airy,g.groups.map(h=>[h.dirty,!!h.flush]),!!g.steamJobs.silky,!!g.steamJobs.airy,g.raw,g.warm,!!g.bake,g.pressState,g.microReady,!!g.microwave,g.teaReady,g.blendReady,!!g.brew,!!g.blend,g.teaStock,g.blendStock,g.orangeStock,!!g.citrus,g.stock,g.reserve,g.dirty.length,g.washRack.length,!!g.wash,g.washed,availableGuests(),g.serviceHead,g.pressSlots.map(s=>s.state),g.ovenSlots.map(s=>s.state)])
+  const serial=JSON.stringify([panel,head,g.view,g.basket,g.groups.map(h=>[h.pulls,h.pots,h.extraction?.lane]),g.pour?.slot,g.selected,g.source,g.foodIndex,g.cups,g.towel,g.drawer,g.bags,g.beans,g.ice,g.milk,g.milkTank,g.milkReserve,g.textures.airy,g.groups.map(h=>[h.dirty,!!h.flush]),!!g.steamJobs.silky,!!g.steamJobs.airy,g.raw,g.warm,!!g.bake,g.pressState,g.microReady,!!g.microwave,g.teaReady,g.blendReady,!!g.brew,!!g.blend,g.teaStock,g.blendStock,g.orangeStock,!!g.citrus,g.stock,g.reserve,g.lidStock,g.lidReserve,g.dirty.length,g.washRack.length,!!g.wash,g.washed,availableGuests(),g.serviceHead,g.pressSlots.map(s=>s.state),g.ovenSlots.map(s=>s.state)])
   if(serial===signature)return;signature=serial
   const body=document.createDocumentFragment()
   const row=(...actions:Action[])=>{const r=tag('div','','row');for(const item of actions){const n=button(item.label,item.fn,item.aria??item.label);n.disabled=!!item.off;if(item.on)n.setAttribute('aria-pressed','true');attach(n,item.carry,item.dest);r.append(n)}body.append(r)}
@@ -334,8 +335,9 @@ async function open(){
    row(command('Refill hopper · '+g.bags,{action:'beans'},{off:!!g.beans}),a('Espresso',()=>choose('Espresso')))
   }else if(panel==='Cups'){
    saucers();cap(g.drawer?'Refill takeaway holders':'Takeaway')
-   for(const cupType of ['paper','clear'])row(...holders.flatMap((v,i)=>v.cup===cupType?[a(ounces(v.size)+' '+cupType+' · '+(g.drawer?g.reserve:g.stock)[stockKey(v.cup,v.size)],()=>fillCup(i),{carry:{kind:'holder',index:i},dest:'holder/'+i})]:[]))
-   cap('Dine in');const ceramics=holders.slice(0,5).map((v,i)=>a(cfg.cups[v.cup]+' · '+g.stock[v.cup],()=>fillCup(i),{carry:{kind:'holder',index:i},dest:'holder/'+i}));for(let i=0;i<ceramics.length;i+=2)row(...ceramics.slice(i,i+2))
+   for(const cupType of ['paper','clear'])row(...holders.flatMap((v,i)=>v.cup===cupType?[a(ounces(v.size)+' '+cupType,()=>fillCup(i),{carry:{kind:'holder',index:i},dest:'holder/'+i})]:[]))
+   row(...lidSeats.map(s=>command(s.label,g.drawer?{action:'restockLid',material:s.cup}:{action:'lid',material:s.cup})))
+   cap('Dine in');const ceramics=holders.slice(0,5).map((v,i)=>a(cfg.cups[v.cup],()=>fillCup(i),{carry:{kind:'holder',index:i},dest:'holder/'+i}));for(let i=0;i<ceramics.length;i+=2)row(...ceramics.slice(i,i+2))
    row(command(g.drawer?'Close reserve':'Open reserve',{action:'drawer'}),a('Espresso',()=>choose('Espresso')))
   }else if(panel==='Drinks'){
    saucers()
@@ -367,7 +369,7 @@ async function open(){
 
  let hotKey=''
  function hotspots(){
-  const key=[g.binLoad,...g.shotReserve,...g.foodReserve.map(f=>f?.food),!!g.compacting,g.bags,...holders.map(b=>g.stock[stockKey(b.cup,b.size)]),g.view,!!g.steamJobs.silky,!!g.steamJobs.airy,g.milkTank,g.textures.airy,g.textures.silky,g.cups[g.selected]?.size,g.groups.map(v=>[v.dirty,!!v.flush,v.extraction?.shot,v.extraction?.lane,v.pulls]),!!g.pour,g.tick===0,!!g.fridgeDoor,!!g.milkRefill,!!g.turn,g.basket,g.serviceHead,g.selected,g.groups.map(h=>h.pots.join('-')).join('/'),g.cups.map(c=>c?.uid),g.towel.map(f=>f?.food),g.drawer,g.ice,g.teaStock,g.blendStock,g.orangeStock,!!g.citrus,g.teaReady,g.blendReady,g.warm,g.overbaked,g.ovenSlots.map(s=>g.hotUrgent(s)),g.pressSlots.map(s=>g.hotUrgent(s)),placingPesto,...g.ovenSlots.map(s=>s.state),...g.pressSlots.map(s=>s.state+Number(s.pesto))].join('|')
+  const key=[g.binLoad,...g.shotReserve,...g.foodReserve.map(f=>f?.food),!!g.compacting,g.bags,...holders.map(b=>g.stock[stockKey(b.cup,b.size)]),...Object.values(g.lidStock),...Object.values(g.lidReserve),g.view,!!g.steamJobs.silky,!!g.steamJobs.airy,g.milkTank,g.textures.airy,g.textures.silky,g.cups[g.selected]?.size,g.groups.map(v=>[v.dirty,!!v.flush,v.extraction?.shot,v.extraction?.lane,v.pulls]),!!g.pour,g.tick===0,!!g.fridgeDoor,!!g.milkRefill,!!g.turn,g.basket,g.serviceHead,g.selected,g.groups.map(h=>h.pots.join('-')).join('/'),g.cups.map(c=>c?.uid),g.towel.map(f=>f?.food),g.drawer,g.ice,g.teaStock,g.blendStock,g.orangeStock,!!g.citrus,g.teaReady,g.blendReady,g.warm,g.overbaked,g.ovenSlots.map(s=>g.hotUrgent(s)),g.pressSlots.map(s=>g.hotUrgent(s)),placingPesto,...g.ovenSlots.map(s=>s.state),...g.pressSlots.map(s=>s.state+Number(s.pesto))].join('|')
   if(key===hotKey||drag)return;hotKey=key
   const target=el('targets');target.replaceChildren();if(g.turn)return
   function hit(name:string,x:number,y:number,w:number,h:number,fn:()=>void,carry?:Carry,dest?:string){
@@ -556,14 +558,13 @@ async function open(){
   for(const [i,b] of holders.entries()){
    const travel=takeCup(b.cup),key=stockKey(b.cup,b.size)
    const stock=g.stock[key],name=(travel?ounces(b.size)+' ':'')+cfg.cups[b.cup]
-   const bTouch=holderTouch(b)
+   const bTouch=holderTouch(b,travel?cfg.capacity.takeaway:cfg.capacity.ceramic)
    const n=hit(name,bTouch.x,bTouch.y,bTouch.w,bTouch.h,()=>{choose('Cups');fillCup(i)},stock>0&&(!g.drawer||!travel)?{kind:'holder',index:i}:undefined,'holder/'+i)
    n.classList.add('cup-bin')
    n.setAttribute('aria-description',stock+' in rack'+(travel?', '+g.reserve[key]+' in reserve':''))
    n.title=name+' · '+stock+' in rack'
-   n.append(tag('span',travel?(g.drawer?'+'+g.reserve[key]:ounces(b.size)):String(stock),travel?'sleeve-tag':'china-stock'))
   }
-  for(const seat of lidSeats)hit('Lids',seat.x,seat.y-13,66,40,()=>act({action:'lid'}));hit('Takeaway reserve',883,916,520,47,()=>{choose('Cups');act({action:'drawer'})})
+  for(const seat of lidSeats){const b=lidTouch(seat,g.lidCapacity),stock=g.lidStock[seat.cup];const n=hit(seat.label,b.x,b.y,b.w,b.h,()=>act(g.drawer?{action:'restockLid',material:seat.cup}:{action:'lid',material:seat.cup}));n.classList.add('cup-bin');n.setAttribute('aria-description',stock+' in rack');n.title=seat.label};hit('Takeaway reserve',883,916,520,47,()=>{choose('Cups');act({action:'drawer'})})
   g.cups.forEach((c,i)=>{const b=saucerTouch(i,c);hit('Select saucer '+(i+1),b.x,b.y,b.w,b.h,()=>cupAction(i),c?{kind:'cup',slot:i}:undefined,'saucer/'+i)})
   foodSlots(false);passStations()
   for(const [add,x,count] of [['tea',1497,g.teaStock],['cold',1595,g.blendStock]] as const){
@@ -580,7 +581,7 @@ async function open(){
    const ticket=button('',()=>{if(offered){fn();return}if(o.drink&&!g.guests[i].gotDrink){toggleBook(true);guide.follow(g,i)}else fn()},o.name+' · '+orderName(i));ticket.className='ticket';ticket.style.left=x/stage.w*100+'%';ticket.style.bottom='76%';attach(ticket,undefined,'guest/'+i)
    ticket.append(tag('small',o.mode==='To go'?ounces(o.size)+' · To go':'Dine in'))
    const icons=tag('span','','ticket-icons');ticket.append(icons)
-   if(o.drink&&!v.gotDrink){const r=cfg.recipes[o.drink];const cup=o.mode==='To go'?r.travelCup:r.cup,im=new Image();im.src='/counter/'+cup+'-empty.webp';im.alt=cfg.cups[cup];icons.append(im);ticket.append(tag('small',cfg.cups[cup],'ticket-vessel'))}
+   if(o.drink&&!v.gotDrink){const r=cfg.recipes[o.drink];const cup=o.mode==='To go'?r.travelCup:r.cup,im=new Image();im.src=cup==='mug'?'/counter/mug-empty.webp':activeCupPath(activeCupId(cup,o.size));im.alt=cfg.cups[cup];icons.append(im);ticket.append(tag('small',cfg.cups[cup],'ticket-vessel'))}
    if(o.food&&!v.gotFood){const im=new Image();im.alt='';im.src='/counter/'+(o.food==='pesto'?'grilled-pesto':o.food)+'.webp';icons.append(im)}
    ticket.append(tag('strong',orderName(i)),tag('i'));ticket.dataset.guest=String(i);parent.append(guest,ticket)
   }}

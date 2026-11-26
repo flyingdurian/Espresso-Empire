@@ -30,11 +30,9 @@ export function foodWellTouch(section:'panini'|'pastries',i:number):TouchBox{
 }
 
 /** Shared desktop and compact shot geometry. CSS consumes the compact box via custom properties. */
-export function shotKeyTouch(head:number,type:'short'|'standard',compact=false):TouchBox{
+export function shotKeyTouch(head:number,type:'short'|'standard',_compact=false):TouchBox{
  const x=heads[head]
- if(!compact)return {x:x+(type==='short'?-31:31),y:466,w:58,h:44}
- const h=stage.h*.05,top=stage.h*(type==='short'?.418:.473)
- return {x,y:top+h/2,w:stage.w*.062,h}
+ return {x:x+(type==='short'?-31:31),y:466,w:58,h:44}
 }
 export function portafilterTouch(head:number):TouchBox{return {x:heads[head]+5,y:531,w:84,h:60}}
 

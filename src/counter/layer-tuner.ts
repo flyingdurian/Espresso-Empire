@@ -1,8 +1,9 @@
 import {identity,layerIds,previewStates,parseLayerMap,serializeLayerMap,type LayerMap,type LayerTransform,type PreviewState} from './layer-overrides.ts'
+import {stackSpec} from './cup-stack-spec.ts'
 const key='via-bianca-layer-overrides-v1'
 export function layerTuner(change:()=>void,exit:()=>void){
  let map:LayerMap={},selected:string=layerIds[0],state:PreviewState='current',view:'current'|'Door'|'Window'|'Kitchen'='current'
- try{map=parseLayerMap(JSON.parse(localStorage.getItem(key)??'{}'))}catch{}
+ try{const saved=JSON.parse(localStorage.getItem(key)??'{}');map=parseLayerMap(Object.fromEntries(Object.entries(saved).filter(([id])=>!id.startsWith('cup-stack/'))))}catch{}
  const panel=document.createElement('section');panel.id='layer-tuner';panel.hidden=true;panel.setAttribute('aria-label','Developer layer tuner')
  const make=<T extends keyof HTMLElementTagNameMap>(tag:T,text='')=>{const n=document.createElement(tag);n.textContent=text;return n}
  const button=(label:string,action:()=>void)=>{const n=make('button',label);n.type='button';n.onclick=action;return n}
@@ -11,7 +12,8 @@ export function layerTuner(change:()=>void,exit:()=>void){
  const choices=select(layerIds),states=select(previewStates(selected)),views=select(['current','Door','Window','Kitchen'] as const)
  const msg=make('output','Preview only • shift paused • controls unchanged')
  const json=make('textarea');json.rows=5;json.spellcheck=false;json.setAttribute('aria-label','Layer override JSON')
- const fields={} as Record<keyof LayerTransform,HTMLInputElement>
+ for(const opt of choices.options){const spec=stackSpec(opt.value);if(spec)opt.textContent=spec.label+' · '+spec.id}
+ const fields={} as Record<keyof Omit<LayerTransform,'stackOffset'>,HTMLInputElement>
  const grid=make('div');grid.className='tuner-grid'
  for(const [name,min,max,step] of [['x',-1672,1672,1],['y',-941,941,1],['rotation',-180,180,1],['scaleX',.25,3,.01],['scaleY',.25,3,.01]] as const){
   const n=make('input');n.type='number';n.min=String(min);n.max=String(max);n.step=String(step);fields[name]=n
@@ -19,7 +21,9 @@ export function layerTuner(change:()=>void,exit:()=>void){
   n.onchange=()=>{try{map=parseLayerMap({...map,[selected]:{...(map[selected]??identity),[name]:n.valueAsNumber}});update();change()}catch(e){msg.textContent=(e as Error).message;syncFields()}}
   grid.append(row(name,n))
  }
- const syncFields=()=>{const value=map[selected]??identity;for(const name of Object.keys(fields) as (keyof LayerTransform)[])fields[name].value=String(value[name])}
+ const offset=make('input');offset.type='number';offset.min='.05';offset.max='.6';offset.step='.01';const offsetRow=row('Stack offset / height',offset);grid.append(offsetRow)
+ offset.onchange=()=>{try{map=parseLayerMap({...map,[selected]:{...(map[selected]??identity),stackOffset:offset.valueAsNumber}});update();change()}catch(e){msg.textContent=(e as Error).message;syncFields()}}
+ const syncFields=()=>{const value=map[selected]??identity;for(const name of Object.keys(fields) as (keyof Omit<LayerTransform,'stackOffset'>)[])fields[name].value=String(value[name]);const spec=stackSpec(selected);offsetRow.hidden=!spec;offset.disabled=!spec;offset.value=spec?String(value.stackOffset??spec.offset):''}
  function update(){syncFields();json.value=serializeLayerMap(map);try{localStorage.setItem(key,json.value)}catch{}msg.textContent='Preview only • shift paused • controls unchanged'}
  choices.onchange=()=>{selected=choices.value;state='current';states.replaceChildren(...Array.from(select(previewStates(selected)).options));states.value=state;states.disabled=states.options.length===1;if(selected.startsWith('rear/')){view='Kitchen';views.value=view}else if(selected.startsWith('front/')){view='Door';views.value=view}syncFields();change()}
  states.onchange=()=>{state=states.value as PreviewState;change()}
